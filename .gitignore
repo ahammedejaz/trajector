@@ -53,3 +53,12 @@ yarn-error.log*
 # Test
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
+
+# Vite
+.vite/
+
+# Implementation runtime data
+data/
+config/secrets.yml
