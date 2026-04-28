@@ -18,11 +18,6 @@ describe('Landing', () => {
     expect(screen.getByTestId('upload-stub')).toBeInTheDocument();
   });
 
-  it('renders the demo preview', () => {
-    render(<Landing onResumeParsed={() => {}} analyzeError={null} />);
-    expect(screen.getByText(/Senior Backend Engineer · senior · United States/)).toBeInTheDocument();
-  });
-
   it('renders the new polish sections', () => {
     render(<Landing onResumeParsed={() => {}} analyzeError={null} />);
     expect(screen.getByText(/jobs scored per scan/i)).toBeInTheDocument(); // StatsRow

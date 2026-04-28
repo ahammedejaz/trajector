@@ -11,7 +11,6 @@ import { UseCases } from '../../components/UseCases/UseCases';
 import { FaqAccordion } from '../../components/FaqAccordion/FaqAccordion';
 import { LocalFirstDiagram } from '../../components/LocalFirstDiagram/LocalFirstDiagram';
 import { Footer } from '../../components/Footer/Footer';
-import { DemoPreview } from '../../components/DemoPreview/DemoPreview';
 import styles from './Landing.module.css';
 
 interface Props {
@@ -28,9 +27,8 @@ export function Landing({ onResumeParsed, analyzeError }: Props) {
   return (
     <div className={styles.root}>
       <Hero
-        rightSlot={<DemoPreview />}
-        onPrimaryClick={() => scrollTo('drop')}
-        onSecondaryClick={() => scrollTo('features')}
+        rightSlot={<Upload onResumeParsed={onResumeParsed} analyzeError={analyzeError} />}
+        onSecondaryClick={() => scrollTo('example')}
       />
       <TrustBar />
       <StatsRow />
@@ -39,9 +37,6 @@ export function Landing({ onResumeParsed, analyzeError }: Props) {
       <HowItWorksStrip />
       <ComparisonTable />
       <UseCases />
-      <section id="drop" className={styles.dropSection}>
-        <Upload onResumeParsed={onResumeParsed} analyzeError={analyzeError} />
-      </section>
       <FaqAccordion />
       <LocalFirstDiagram />
       <Footer />
