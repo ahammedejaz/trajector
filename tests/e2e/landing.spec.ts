@@ -22,4 +22,13 @@ test.describe('landing screen', () => {
     await page.getByText(/where does my data go/i).click();
     await expect(page.getByText(/^Nowhere/)).toBeVisible();
   });
+
+  test('shows new polish sections', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText(/jobs scored per scan/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /how it scores/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /vs the alternatives/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /who.*for/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /local-first by design/i })).toBeVisible();
+  });
 });
