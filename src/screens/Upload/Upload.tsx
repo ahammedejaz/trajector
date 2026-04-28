@@ -32,26 +32,21 @@ export function Upload({ onResumeParsed, analyzeError }: UploadProps) {
     zoneState === 'idle' && analyzeError ? 'error' : zoneState;
 
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>Trajector</div>
-      <div className={styles.body}>
-        <div className={styles.column}>
-          <div className={styles['headline-group']}>
-            <h1 className={styles.headline}>Drop your resume to begin</h1>
-            <p className={styles.subhead}>PDF, DOCX, or markdown · stays on your machine</p>
-          </div>
-          <DropZone
-            state={displayState}
-            errorMessage={displayError}
-            onFileSelected={handleFile}
-          />
-          <p className={styles.reassurance}>
-            No account. No upload to a server.
-            <br />
-            Parsed locally, evaluated locally.
-          </p>
-        </div>
+    <div className={styles.column}>
+      <div className={styles.headlineGroup}>
+        <h1 className={styles.headline}>Drop your resume to begin</h1>
+        <p className={styles.subhead}>PDF, DOCX, or markdown · stays on your machine</p>
       </div>
+      <DropZone
+        state={displayState}
+        errorMessage={displayError}
+        onFileSelected={handleFile}
+      />
+      <p className={styles.reassurance}>
+        No account. No upload to a server.
+        <br />
+        Parsed locally, evaluated locally.
+      </p>
     </div>
   );
 }

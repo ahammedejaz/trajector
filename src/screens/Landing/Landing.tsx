@@ -40,9 +40,7 @@ export function Landing({ onResumeParsed, analyzeError }: Props) {
       <ComparisonTable />
       <UseCases />
       <section id="drop" className={styles.dropSection}>
-        <div className={styles.dropInner}>
-          <Upload onResumeParsed={onResumeParsed} analyzeError={analyzeError} />
-        </div>
+        <Upload onResumeParsed={onResumeParsed} analyzeError={analyzeError} />
       </section>
       <FaqAccordion />
       <LocalFirstDiagram />
