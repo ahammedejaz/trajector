@@ -110,16 +110,17 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
   const grouped = useMemo(() => {
     const strong: ScoredJob[] = [];
     const decent: ScoredJob[] = [];
-    let skipCount = 0;
+    const skip: ScoredJob[] = [];
     for (const j of filteredJobs) {
       const t = scoreTier(j.score);
       if (t === 'strong') strong.push(j);
       else if (t === 'decent') decent.push(j);
-      else skipCount += 1;
+      else skip.push(j);
     }
     strong.sort((a, b) => b.score - a.score);
     decent.sort((a, b) => b.score - a.score);
-    return { strong, decent, skipCount };
+    skip.sort((a, b) => b.score - a.score);
+    return { strong, decent, skip };
   }, [filteredJobs]);
 
   const countsByKey = useMemo(() => {
@@ -213,8 +214,50 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
           </div>
         )}
 
-        {finished && !error && grouped.strong.length === 0 && grouped.decent.length === 0 && (
-          <p className={styles.empty}>No matches yet. Try widening your profile or relaxing filters.</p>
+        {finished && !error && jobs.length === 0 && (
+          <div className={styles.emptyBox}>
+            <p className={styles.emptyTitle}>No matches yet</p>
+            <p className={styles.emptyBody}>
+              Either no companies in our list have postings matching your stack signals,
+              or none of the fetched jobs scored high enough. The current company list is weighted toward
+              AI, devtools, and fintech — try editing your target role or stack signals.
+            </p>
+          </div>
+        )}
+
+        {finished && !error && jobs.length > 0 && grouped.strong.length === 0 && grouped.decent.length === 0 && grouped.skip.length === 0 && (
+          <div className={styles.emptyBox}>
+            <p className={styles.emptyTitle}>No matches at the current filter</p>
+            <p className={styles.emptyBody}>
+              {jobs.length} {jobs.length === 1 ? 'job was' : 'jobs were'} scanned, but none survived the active filter.
+            </p>
+            <button
+              type="button"
+              className={styles.emptyAction}
+              onClick={() =>
+                setFilters({ tier: 'all', sources: new Set(enabledSources), minScore: 0 })
+              }
+            >
+              Reset filters
+            </button>
+          </div>
+        )}
+
+        {finished && !error && jobs.length > 0 && grouped.strong.length === 0 && grouped.decent.length === 0 && grouped.skip.length > 0 && filters.tier === 'all' && (
+          <div className={styles.emptyBox}>
+            <p className={styles.emptyTitle}>No strong or decent matches</p>
+            <p className={styles.emptyBody}>
+              {grouped.skip.length} {grouped.skip.length === 1 ? 'job was' : 'jobs were'} scanned but scored below 50.
+              They're hidden by default — show them anyway to triage manually.
+            </p>
+            <button
+              type="button"
+              className={styles.emptyAction}
+              onClick={() => setFilters((f) => ({ ...f, tier: 'skip' }))}
+            >
+              Show {grouped.skip.length} skipped {grouped.skip.length === 1 ? 'job' : 'jobs'}
+            </button>
+          </div>
         )}
 
         {grouped.strong.length > 0 && (
@@ -243,9 +286,22 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
           </section>
         )}
 
-        {grouped.skipCount > 0 && (
+        {grouped.skip.length > 0 && filters.tier === 'skip' && (
+          <section className={styles.group}>
+            <h2 className={styles.groupTitle}>
+              <ScoreDot tier="skip" /> Skipped ({grouped.skip.length})
+            </h2>
+            <div className={styles.list}>
+              {grouped.skip.map((j) => (
+                <JobCard key={j.id} job={j} onClick={setSelected} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {grouped.skip.length > 0 && filters.tier === 'all' && (grouped.strong.length > 0 || grouped.decent.length > 0) && (
           <p className={styles.skipNote}>
-            {grouped.skipCount} skipped — refine filters or profile to surface more.
+            {grouped.skip.length} skipped (score &lt; 50). Click "Skip" in the Tier filter to review them.
           </p>
         )}
       </main>
