@@ -1,8 +1,13 @@
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-// Point to the worker file so the fake worker fallback can import it in tests.
-// In the browser (Vite), this is overridden via URL import in the component layer.
-pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
+// In a real browser (Vite dev/prod), serve the worker from /public.
+// In Vitest/jsdom, fall back to the Node-resolvable module path so the
+// fake-worker shim can import it.
+if (typeof window !== 'undefined' && !import.meta.env?.VITEST) {
+  pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+} else {
+  pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
+}
 
 export async function parsePdf(data: Uint8Array): Promise<string> {
   const doc = await pdfjs.getDocument({ data }).promise;
