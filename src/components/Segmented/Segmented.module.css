@@ -1,0 +1,35 @@
+.root {
+  display: inline-flex;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 2px;
+  gap: 2px;
+}
+
+.option {
+  background: transparent;
+  border: none;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--easing-out),
+              color var(--motion-fast) var(--easing-out);
+  white-space: nowrap;
+}
+
+.option:hover:not(.active) {
+  color: var(--text-primary);
+}
+
+.active {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+}
+
+.option:focus-visible {
+  outline: var(--border-width) solid var(--accent);
+  outline-offset: -1px;
+}

@@ -5,10 +5,20 @@ import type { Profile, SourceKey } from '../types';
 const PROFILE: Profile = {
   targetRole: 'Senior Backend Engineer',
   level: 'senior',
-  compFloor: 200000,
-  location: 'remote',
+  yearsOfExperience: null,
   stackSignals: ['Go', 'PostgreSQL'],
+  employmentTypes: [],
+  compFloor: 200000,
+  locationPreference: 'remote',
+  country: 'United States',
+  preferredLocations: [],
+  requiresSponsorship: false,
   dealBreakers: [],
+  companyStages: [],
+  companySize: null,
+  equityImportance: null,
+  industriesToExclude: [],
+  jobSearchStatus: null,
 };
 
 const SOURCES: SourceKey[] = ['linkedin', 'greenhouse', 'lever'];
@@ -101,5 +111,18 @@ describe('scanJobs', () => {
   it('throws if model returns a non-array', async () => {
     vi.stubGlobal('fetch', mockOR({ jobs: [] }));
     await expect(scanJobs(PROFILE, SOURCES, 'k', 'm')).rejects.toThrow('Expected an array of jobs');
+  });
+
+  it('passes country in the user message', async () => {
+    let capturedBody: string | null = null;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      capturedBody = init.body as string;
+      return {
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: '[]' } }] }),
+      };
+    }));
+    await scanJobs(PROFILE, SOURCES, 'k', 'm');
+    expect(capturedBody).toContain('United States');
   });
 });

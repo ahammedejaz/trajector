@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Profile, ScoredJob, SourceKey, SourceState } from '../../types';
 import { loadSettings } from '../../lib/storage';
 import { scanJobs, SOURCE_LABELS } from '../../lib/scanJobs';
@@ -15,9 +15,13 @@ interface Props {
   onEditProfile: () => void;
   onSwitchResume: () => void;
   onOpenSettings: () => void;
+  onScanFinished?: () => void;
 }
 
-export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings }: Props) {
+export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings, onScanFinished }: Props) {
+  const onScanFinishedRef = useRef(onScanFinished);
+  useEffect(() => { onScanFinishedRef.current = onScanFinished; });
+
   const settings = useMemo(() => loadSettings(), []);
   const enabledSources = useMemo<SourceKey[]>(
     () => (Object.keys(settings.sources) as SourceKey[]).filter((k) => settings.sources[k]),
@@ -47,7 +51,10 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
             setSources((prev) =>
               prev.map((s) => (s.key === key ? { ...s, status: 'done' } : s)),
             );
-            if (i === enabledSources.length - 1) setFinished(true);
+            if (i === enabledSources.length - 1) {
+              setFinished(true);
+              onScanFinishedRef.current?.();
+            }
           }, i * 200);
           timers.push(t);
         });
@@ -56,6 +63,7 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
         setError(err instanceof Error ? err.message : 'Unknown error');
         setSources((prev) => prev.map((s) => ({ ...s, status: 'error' })));
         setFinished(true);
+        onScanFinishedRef.current?.();
       }
     }
 
@@ -87,7 +95,7 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
     return m;
   }, [jobs]);
 
-  const subtitle = `${profile.targetRole} · ${profile.level} · ${profile.location}`;
+  const subtitle = `${profile.targetRole} · ${profile.level} · ${profile.locationPreference}`;
 
   return (
     <div className={styles.root}>

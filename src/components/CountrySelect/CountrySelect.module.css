@@ -1,0 +1,52 @@
+.root {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--motion-fast) var(--easing-out);
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.list {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  list-style: none;
+  margin: 0;
+  padding: var(--space-1);
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+  z-index: 50;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.option {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+}
+
+.option:hover, .option[aria-selected='true'] {
+  background: var(--bg-surface-2);
+}

@@ -1,0 +1,39 @@
+.root {
+  padding: var(--space-5);
+  border-top: var(--border-width) solid var(--border-subtle);
+  margin-top: var(--space-7);
+}
+
+.inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-caption);
+  color: var(--text-tertiary);
+}
+
+.left {
+  margin: 0;
+}
+
+.right {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.link {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--text-primary);
+}
+
+.divider {
+  color: var(--text-tertiary);
+}

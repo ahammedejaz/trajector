@@ -2,11 +2,21 @@
   min-height: 100%;
 }
 
+.stepperWrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-5) 0;
+}
+
+.screen {
+  padding-top: 0;
+}
+
 .analyzing {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 60vh;
 }
 
 .analyzingText {
