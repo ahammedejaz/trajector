@@ -1,0 +1,15 @@
+.root {
+  width: 100%;
+}
+
+.dropSection {
+  padding: var(--space-7) var(--space-5);
+  background: var(--bg-surface);
+  border-top: var(--border-width) solid var(--border-subtle);
+  border-bottom: var(--border-width) solid var(--border-subtle);
+}
+
+.dropInner {
+  max-width: 720px;
+  margin: 0 auto;
+}
