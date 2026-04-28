@@ -10,7 +10,7 @@ const PROFILE: Profile = {
   employmentTypes: [],
   compFloor: 200000,
   locationPreference: 'remote',
-  country: null,
+  country: 'United States',
   preferredLocations: [],
   requiresSponsorship: false,
   dealBreakers: [],
@@ -111,5 +111,18 @@ describe('scanJobs', () => {
   it('throws if model returns a non-array', async () => {
     vi.stubGlobal('fetch', mockOR({ jobs: [] }));
     await expect(scanJobs(PROFILE, SOURCES, 'k', 'm')).rejects.toThrow('Expected an array of jobs');
+  });
+
+  it('passes country in the user message', async () => {
+    let capturedBody: string | null = null;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      capturedBody = init.body as string;
+      return {
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: '[]' } }] }),
+      };
+    }));
+    await scanJobs(PROFILE, SOURCES, 'k', 'm');
+    expect(capturedBody).toContain('United States');
   });
 });
