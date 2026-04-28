@@ -1,0 +1,11 @@
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.strong { background: var(--score-strong); }
+.decent { background: var(--score-decent); }
+.skip { background: var(--score-skip); }
