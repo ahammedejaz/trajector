@@ -48,9 +48,8 @@
   font-size: var(--font-size-mono);
   line-height: 1.55;
   white-space: pre-wrap;
-  overflow-x: auto;
+  overflow: auto;
   max-height: 60vh;
-  overflow-y: auto;
 }
 
 .warning {

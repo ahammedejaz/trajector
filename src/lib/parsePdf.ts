@@ -5,14 +5,14 @@ import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 pdfjs.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/legacy/build/pdf.worker.mjs';
 
 export async function parsePdf(data: Uint8Array): Promise<string> {
-  const doc = await pdfjs.getDocument({ data, disableWorker: true }).promise;
+  const doc = await pdfjs.getDocument({ data }).promise;
   const parts: string[] = [];
   for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
     const page = await doc.getPage(pageNum);
     const content = await page.getTextContent();
     const lines = content.items
-      .filter((item): item is { str: string } => 'str' in item)
-      .map((item) => item.str);
+      .filter((item) => 'str' in item)
+      .map((item) => (item as { str: string }).str);
     parts.push(lines.join(' '));
   }
   return parts.join('\n\n');

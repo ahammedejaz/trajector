@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { parseResume } from './parseResume';
 
 function fileFromBuffer(buf: Uint8Array, name: string, type: string): File {
-  return new File([buf], name, { type });
+  return new File([buf as unknown as BlobPart], name, { type });
 }
 
 describe('parseResume', () => {
