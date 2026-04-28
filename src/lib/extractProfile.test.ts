@@ -15,7 +15,7 @@ describe('extractProfile', () => {
     expect(p.targetRole).toBe('Senior Backend Engineer');
     expect(p.level).toBe('senior');
     expect(p.compFloor).toBe(200000);
-    expect(p.location).toBe('remote');
+    expect(p.locationPreference).toBe('remote');
     expect(p.stackSignals).toEqual(['Go', 'PostgreSQL', 'Kubernetes']);
     expect(p.dealBreakers).toEqual(['crypto']);
   });
@@ -27,7 +27,7 @@ describe('extractProfile', () => {
 
   it('coerces an unknown location to "remote"', async () => {
     mockLLM({ targetRole: 'Eng', level: 'senior', compFloor: null, location: 'new york', stackSignals: [], dealBreakers: [] });
-    expect((await extractProfile('text', 'key', 'model')).location).toBe('remote');
+    expect((await extractProfile('text', 'key', 'model')).locationPreference).toBe('remote');
   });
 
   it('caps stackSignals at 8 items', async () => {

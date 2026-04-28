@@ -4,7 +4,7 @@ import { TagChips } from '../../components/TagChips/TagChips';
 import styles from './Confirm.module.css';
 
 const LEVELS = ['junior', 'mid', 'senior', 'staff', 'principal'] as const;
-const LOCATIONS = ['remote', 'hybrid', 'onsite'] as const;
+const LOCATIONS = ['remote', 'hybrid', 'onsite', 'flexible'] as const;
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -24,7 +24,7 @@ export function Confirm({ profile: initial, onConfirm }: Props) {
   }
 
   const roleError = roleTouched && !profile.targetRole.trim() ? 'Required.' : null;
-  const isValid = Boolean(profile.targetRole.trim() && profile.level && profile.location);
+  const isValid = Boolean(profile.targetRole.trim() && profile.level && profile.locationPreference);
 
   return (
     <div className={styles.root}>
@@ -84,8 +84,8 @@ export function Confirm({ profile: initial, onConfirm }: Props) {
             <select
               id="location"
               className={styles.select}
-              value={profile.location}
-              onChange={(e) => update({ location: e.target.value as Profile['location'] })}
+              value={profile.locationPreference}
+              onChange={(e) => update({ locationPreference: e.target.value as Profile['locationPreference'] })}
             >
               {LOCATIONS.map((l) => (
                 <option key={l} value={l}>{capitalize(l)}</option>
