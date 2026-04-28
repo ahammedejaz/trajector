@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lint": "eslint . && stylelint 'src/**/*.css'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "og": "node scripts/generate-images.mjs"
   },
   "keywords": [
     "ai-agent",
