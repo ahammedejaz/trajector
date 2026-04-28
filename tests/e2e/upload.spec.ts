@@ -26,7 +26,7 @@ const MOCK_PROFILE = {
 const MOCK_JOBS = [
   {
     id: 'j1',
-    source: 'linkedin',
+    source: 'greenhouse',
     company: 'Acme Corp',
     title: 'Senior Backend Engineer',
     location: 'Remote (US)',
@@ -52,7 +52,7 @@ test.describe('upload flow', () => {
         JSON.stringify({
           openRouterKey: 'sk-or-v1-test-key',
           model: 'anthropic/claude-sonnet-4-6',
-          sources: { linkedin: true, greenhouse: true, lever: true, workable: true, yc: true },
+          sources: { greenhouse: true, ashby: true, lever: true },
         }),
       );
     });

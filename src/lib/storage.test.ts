@@ -9,13 +9,13 @@ describe('loadSettings', () => {
     const s = loadSettings();
     expect(s.openRouterKey).toBe('');
     expect(s.model).toBe('anthropic/claude-sonnet-4-6');
-    expect(s.sources.linkedin).toBe(true);
-    expect(s.sources.yc).toBe(true);
+    expect(s.sources.greenhouse).toBe(true);
+    expect(s.sources.ashby).toBe(true);
   });
   it('returns stored settings when present', () => {
     const stored: AppSettings = {
       openRouterKey: 'sk-or-test', model: 'openai/gpt-4o',
-      sources: { linkedin: true, greenhouse: false, lever: true, workable: true, yc: false },
+      sources: { greenhouse: false, ashby: true, lever: true },
     };
     localStorage.setItem('trajector_settings', JSON.stringify(stored));
     const s = loadSettings();

@@ -4,7 +4,7 @@ const KEY = 'trajector_settings';
 const DEFAULTS: AppSettings = {
   openRouterKey: '',
   model: 'anthropic/claude-sonnet-4-6',
-  sources: { linkedin: true, greenhouse: true, lever: true, workable: true, yc: true },
+  sources: { greenhouse: true, ashby: true, lever: true },
 };
 
 export function loadSettings(): AppSettings {

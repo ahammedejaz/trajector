@@ -6,7 +6,7 @@ import type { ScoredJob } from '../../types';
 
 const JOB: ScoredJob = {
   id: 'j1',
-  source: 'linkedin',
+  source: 'greenhouse',
   company: 'Acme Corp',
   title: 'Senior Backend Engineer',
   location: 'Remote (US)',

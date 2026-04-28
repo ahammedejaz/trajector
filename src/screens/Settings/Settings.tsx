@@ -13,11 +13,9 @@ const CURATED_MODELS = [
 ] as const;
 
 const SOURCE_LABELS: Record<keyof AppSettings['sources'], string> = {
-  linkedin: 'LinkedIn',
-  greenhouse: 'Greenhouse',
-  lever: 'Lever',
-  workable: 'Workable',
-  yc: 'Y Combinator',
+  greenhouse: 'Greenhouse companies',
+  ashby: 'Ashby companies',
+  lever: 'Lever companies',
 };
 
 interface Props {

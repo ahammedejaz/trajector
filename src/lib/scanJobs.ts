@@ -2,11 +2,9 @@ import { fetchCompletion } from './openrouter';
 import type { Profile, ScoredJob, SourceKey } from '../types';
 
 const SOURCE_LABELS: Record<SourceKey, string> = {
-  linkedin: 'LinkedIn',
   greenhouse: 'Greenhouse',
+  ashby: 'Ashby',
   lever: 'Lever',
-  workable: 'Workable',
-  yc: 'Y Combinator',
 };
 
 function buildSystemPrompt(enabledSources: SourceKey[]): string {
@@ -34,11 +32,9 @@ Each item:
 }
 
 URL patterns by source:
-- linkedin: https://www.linkedin.com/jobs/view/{slug}-{id}
 - greenhouse: https://boards.greenhouse.io/{company-slug}/jobs/{id}
+- ashby: https://jobs.ashbyhq.com/{company-slug}/{id}
 - lever: https://jobs.lever.co/{company-slug}/{id}
-- workable: https://apply.workable.com/{company-slug}/j/{id}
-- yc: https://www.workatastartup.com/jobs/{id}
 
 Rules:
 - Distribute postings across the enabled sources (don't put them all on one)
@@ -58,16 +54,12 @@ Rules:
 function fallbackApplyUrl(source: SourceKey, company: string, id: string): string {
   const slug = company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   switch (source) {
-    case 'linkedin':
-      return `https://www.linkedin.com/jobs/view/${slug}-${id}`;
     case 'greenhouse':
       return `https://boards.greenhouse.io/${slug}/jobs/${id}`;
+    case 'ashby':
+      return `https://jobs.ashbyhq.com/${slug}/${id}`;
     case 'lever':
       return `https://jobs.lever.co/${slug}/${id}`;
-    case 'workable':
-      return `https://apply.workable.com/${slug}/j/${id}`;
-    case 'yc':
-      return `https://www.workatastartup.com/jobs/${id}`;
   }
 }
 

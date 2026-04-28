@@ -21,7 +21,7 @@ const PROFILE: Profile = {
   jobSearchStatus: null,
 };
 
-const SOURCES: SourceKey[] = ['linkedin', 'greenhouse', 'lever'];
+const SOURCES: SourceKey[] = ['greenhouse', 'ashby', 'lever'];
 
 function mockOR(content: unknown) {
   return vi.fn().mockResolvedValue({
@@ -40,7 +40,7 @@ describe('scanJobs', () => {
     const payload = [
       {
         id: 'j1',
-        source: 'linkedin',
+        source: 'greenhouse',
         company: 'Acme',
         title: 'Senior Backend Engineer',
         location: 'Remote',
@@ -49,7 +49,7 @@ describe('scanJobs', () => {
         tags: ['Go', 'Postgres'],
         score: 92,
         scoreReason: 'Stack and seniority match.',
-        applyUrl: 'https://www.linkedin.com/jobs/view/acme-j1',
+        applyUrl: 'https://boards.greenhouse.io/acme/jobs/j1',
         responsibilities: ['Own the backend stack'],
         requirements: ['5+ years Go experience'],
         benefits: ['Remote stipend'],
@@ -60,13 +60,13 @@ describe('scanJobs', () => {
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'sk-or-test', 'anthropic/claude-sonnet-4-6');
     expect(jobs).toHaveLength(1);
-    expect(jobs[0]).toMatchObject({ id: 'j1', score: 92, source: 'linkedin' });
+    expect(jobs[0]).toMatchObject({ id: 'j1', score: 92, source: 'greenhouse' });
   });
 
   it('clamps scores to 0-100', async () => {
     const payload = [
-      { id: 'a', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 150, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
-      { id: 'b', source: 'linkedin', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: -10, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'a', source: 'greenhouse', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 150, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'b', source: 'greenhouse', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: -10, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
@@ -76,9 +76,9 @@ describe('scanJobs', () => {
 
   it('drops records missing required fields', async () => {
     const payload = [
-      { id: 'good', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
-      { id: 'bad-no-title', source: 'linkedin', company: 'A', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
-      { source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'good', source: 'greenhouse', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'bad-no-title', source: 'greenhouse', company: 'A', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { source: 'greenhouse', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
@@ -88,8 +88,8 @@ describe('scanJobs', () => {
 
   it('dedupes by id', async () => {
     const payload = [
-      { id: 'x', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
-      { id: 'x', source: 'linkedin', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: 70, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'x', source: 'greenhouse', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'x', source: 'greenhouse', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: 70, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
@@ -103,7 +103,7 @@ describe('scanJobs', () => {
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
-    expect(jobs[0].source).toBe('linkedin');
+    expect(jobs[0].source).toBe('greenhouse');
   });
 
   it('throws if model returns invalid JSON', async () => {
@@ -143,7 +143,7 @@ describe('scanJobs', () => {
 
   it('preserves applyUrl from the model when provided', async () => {
     const payload = [
-      { id: 'j1', source: 'linkedin', company: 'C', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: 'https://example.com/apply' },
+      { id: 'j1', source: 'greenhouse', company: 'C', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: 'https://example.com/apply' },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');

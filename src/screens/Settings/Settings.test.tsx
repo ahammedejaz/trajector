@@ -46,14 +46,14 @@ describe('Settings screen', () => {
 
   it('renders source toggle checkboxes', () => {
     render(<Settings onDone={() => {}} />);
-    expect(screen.getByRole('checkbox', { name: /linkedin/i })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: /greenhouse/i })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /ashby/i })).toBeInTheDocument();
   });
 
   it('toggles a source off and persists it', async () => {
     render(<Settings onDone={() => {}} />);
-    await userEvent.click(screen.getByRole('checkbox', { name: /linkedin/i }));
+    await userEvent.click(screen.getByRole('checkbox', { name: /greenhouse/i }));
     const stored = JSON.parse(localStorage.getItem('trajector_settings') ?? '{}') as { sources: Record<string, boolean> };
-    expect(stored.sources.linkedin).toBe(false);
+    expect(stored.sources.greenhouse).toBe(false);
   });
 });

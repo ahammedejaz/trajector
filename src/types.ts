@@ -37,11 +37,9 @@ export interface AppSettings {
   openRouterKey: string;
   model: string;
   sources: {
-    linkedin: boolean;
     greenhouse: boolean;
+    ashby: boolean;
     lever: boolean;
-    workable: boolean;
-    yc: boolean;
   };
 }
 export type SourceKey = keyof AppSettings['sources'];

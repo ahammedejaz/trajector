@@ -22,7 +22,7 @@ export const DEMO_PROFILE: Profile = {
 export const DEMO_JOBS: ScoredJob[] = [
   {
     id: 'demo-1',
-    source: 'linkedin',
+    source: 'greenhouse',
     company: 'Vercel',
     title: 'Staff Backend Engineer, Edge Runtime',
     location: 'Remote (US)',
@@ -59,7 +59,7 @@ export const DEMO_JOBS: ScoredJob[] = [
   },
   {
     id: 'demo-2',
-    source: 'greenhouse',
+    source: 'ashby',
     company: 'Linear',
     title: 'Senior Backend Engineer',
     location: 'Remote (Americas)',
@@ -93,7 +93,7 @@ export const DEMO_JOBS: ScoredJob[] = [
   },
   {
     id: 'demo-3',
-    source: 'lever',
+    source: 'greenhouse',
     company: 'Cloudflare',
     title: 'Backend Engineer, Workers',
     location: 'Austin, TX (Hybrid)',
@@ -124,7 +124,7 @@ export const DEMO_JOBS: ScoredJob[] = [
   },
   {
     id: 'demo-4',
-    source: 'workable',
+    source: 'lever',
     company: 'Acme Bank',
     title: 'Backend Developer',
     location: 'New York, NY (On-site, 5 days)',
@@ -155,7 +155,7 @@ export const DEMO_JOBS: ScoredJob[] = [
   },
   {
     id: 'demo-5',
-    source: 'yc',
+    source: 'ashby',
     company: 'PinkPaperPlanes',
     title: 'Founding Engineer',
     location: 'San Francisco (On-site)',

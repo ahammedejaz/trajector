@@ -26,7 +26,7 @@ const MOCK_PROFILE = {
 const MOCK_JOBS = [
   {
     id: 'j1',
-    source: 'linkedin',
+    source: 'greenhouse',
     company: 'Acme',
     title: 'Senior Backend Engineer',
     location: 'Remote',
@@ -87,7 +87,7 @@ async function setup({ page }: { page: import('@playwright/test').Page }) {
       JSON.stringify({
         openRouterKey: 'sk-or-v1-test-key',
         model: 'anthropic/claude-sonnet-4-6',
-        sources: { linkedin: true, greenhouse: true, lever: true, workable: false, yc: false },
+        sources: { greenhouse: true, ashby: true, lever: true },
       }),
     );
   });
@@ -137,7 +137,7 @@ test.describe('results flow', () => {
     await expect(page.getByText('Strong match description.')).toBeVisible();
     await expect(page.getByRole('heading', { name: /why this score/i })).toBeVisible();
     // New: Apply button
-    await expect(page.getByRole('link', { name: /apply on linkedin/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /apply on greenhouse/i })).toBeVisible();
 
     await page.getByRole('button', { name: /close/i }).click();
     await expect(page.getByText('Strong match description.')).toHaveCount(0);

@@ -24,7 +24,7 @@ const PROFILE: Profile = {
 };
 
 const JOBS: ScoredJob[] = [
-  { id: 'j1', source: 'linkedin', company: 'Acme', title: 'Senior Backend Engineer', location: 'Remote', compRange: '$220k', description: 'Build Go services for scale.', tags: ['Go'], score: 92, scoreReason: 'Match.', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+  { id: 'j1', source: 'greenhouse', company: 'Acme', title: 'Senior Backend Engineer', location: 'Remote', compRange: '$220k', description: 'Build Go services for scale.', tags: ['Go'], score: 92, scoreReason: 'Match.', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
   { id: 'j2', source: 'greenhouse', company: 'Beta', title: 'Backend Engineer', location: 'Remote', compRange: null, description: 'Ship features.', tags: ['Go'], score: 65, scoreReason: 'Decent.', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
   { id: 'j3', source: 'lever', company: 'Gamma', title: 'Junior Backend', location: 'Remote', compRange: null, description: 'Junior.', tags: ['Go'], score: 30, scoreReason: 'Too junior.', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
 ];
@@ -32,11 +32,9 @@ const JOBS: ScoredJob[] = [
 vi.mock('../../lib/scanJobs', () => ({
   scanJobs: vi.fn(),
   SOURCE_LABELS: {
-    linkedin: 'LinkedIn',
     greenhouse: 'Greenhouse',
+    ashby: 'Ashby',
     lever: 'Lever',
-    workable: 'Workable',
-    yc: 'Y Combinator',
   },
 }));
 
@@ -44,7 +42,7 @@ vi.mock('../../lib/storage', () => ({
   loadSettings: () => ({
     openRouterKey: 'sk-or-test',
     model: 'anthropic/claude-sonnet-4-6',
-    sources: { linkedin: true, greenhouse: true, lever: true, workable: false, yc: false },
+    sources: { greenhouse: true, ashby: true, lever: true },
   }),
 }));
 
