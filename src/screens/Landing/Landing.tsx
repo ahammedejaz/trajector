@@ -7,6 +7,7 @@ import { HowItScores } from '../../components/HowItScores/HowItScores';
 import { FaqAccordion } from '../../components/FaqAccordion/FaqAccordion';
 import { Footer } from '../../components/Footer/Footer';
 import { DemoPreview } from '../../components/DemoPreview/DemoPreview';
+import { Reveal } from '../../components/Reveal/Reveal';
 import styles from './Landing.module.css';
 
 interface Props {
@@ -26,23 +27,25 @@ export function Landing({ onResumeParsed, analyzeError }: Props) {
         rightSlot={<Upload onResumeParsed={onResumeParsed} analyzeError={analyzeError} />}
         onSecondaryClick={() => scrollTo('example')}
       />
-      <TrustBar />
-      <FeatureGrid />
-      <section id="example" className={styles.exampleSection}>
-        <div className={styles.exampleInner}>
-          <p className={styles.exampleEyebrow}>See an example</p>
-          <h2 className={styles.exampleTitle}>What a real scan looks like.</h2>
-          <p className={styles.exampleSub}>
-            A pre-rendered scan against a sample profile. Click any card to see the full job detail.
-          </p>
-          <div className={styles.exampleFrame}>
-            <DemoPreview />
+      <Reveal><TrustBar /></Reveal>
+      <Reveal><FeatureGrid /></Reveal>
+      <Reveal>
+        <section id="example" className={styles.exampleSection}>
+          <div className={styles.exampleInner}>
+            <p className={styles.exampleEyebrow}>See an example</p>
+            <h2 className={styles.exampleTitle}>What a real scan looks like.</h2>
+            <p className={styles.exampleSub}>
+              A pre-rendered scan against a sample profile. Click any card to see the full job detail.
+            </p>
+            <div className={styles.exampleFrame}>
+              <DemoPreview />
+            </div>
           </div>
-        </div>
-      </section>
-      <HowItScores />
-      <FaqAccordion />
-      <Footer />
+        </section>
+      </Reveal>
+      <Reveal><HowItScores /></Reveal>
+      <Reveal><FaqAccordion /></Reveal>
+      <Reveal><Footer /></Reveal>
     </div>
   );
 }

@@ -13,13 +13,15 @@ describe('Disclosure', () => {
     expect(screen.getByText('Body')).toBeVisible();
   });
 
-  it('hides children when closed', () => {
-    render(
+  it('marks the body as aria-hidden when closed', () => {
+    const { container } = render(
       <Disclosure title="Section">
         <p>Body</p>
       </Disclosure>,
     );
-    expect(screen.queryByText('Body')).not.toBeInTheDocument();
+    const wrap = container.querySelector('[aria-hidden="true"]');
+    expect(wrap).toBeInTheDocument();
+    expect(wrap?.textContent).toContain('Body');
   });
 
   it('toggles open on header click', async () => {
