@@ -1,47 +1,110 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { extractProfile } from './extractProfile';
-import * as openrouter from './openrouter';
 
-vi.mock('./openrouter');
-
-function mockLLM(json: unknown) {
-  vi.mocked(openrouter.fetchCompletion).mockResolvedValueOnce(JSON.stringify(json));
+function mockOR(content: unknown) {
+  return vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ choices: [{ message: { content: typeof content === 'string' ? content : JSON.stringify(content) } }] }),
+  });
 }
 
+const PAYLOAD = {
+  targetRole: 'Senior Backend Engineer',
+  level: 'senior',
+  yearsOfExperience: 7,
+  stackSignals: ['Go', 'PostgreSQL'],
+  employmentTypes: ['full-time'],
+  compFloor: 200000,
+  locationPreference: 'remote',
+  country: 'United States',
+  preferredLocations: [],
+  requiresSponsorship: false,
+  dealBreakers: [],
+  companyStages: ['growth', 'public'],
+  companySize: 'mid',
+  equityImportance: 'nice',
+  industriesToExclude: [],
+  jobSearchStatus: 'open',
+};
+
 describe('extractProfile', () => {
-  it('parses a complete valid JSON response', async () => {
-    mockLLM({ targetRole: 'Senior Backend Engineer', level: 'senior', compFloor: 200000, location: 'remote', stackSignals: ['Go', 'PostgreSQL', 'Kubernetes'], dealBreakers: ['crypto'] });
-    const p = await extractProfile('resume text', 'key', 'model');
-    expect(p.targetRole).toBe('Senior Backend Engineer');
+  beforeEach(() => vi.stubGlobal('fetch', mockOR(PAYLOAD)));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('returns a fully populated Profile', async () => {
+    const p = await extractProfile('resume text', 'k', 'm');
+    expect(p).toMatchObject({
+      targetRole: 'Senior Backend Engineer',
+      level: 'senior',
+      yearsOfExperience: 7,
+      stackSignals: ['Go', 'PostgreSQL'],
+      employmentTypes: ['full-time'],
+      compFloor: 200000,
+      locationPreference: 'remote',
+      country: 'United States',
+      requiresSponsorship: false,
+      companyStages: ['growth', 'public'],
+      companySize: 'mid',
+      equityImportance: 'nice',
+      jobSearchStatus: 'open',
+    });
+  });
+
+  it('defaults missing fields safely', async () => {
+    vi.stubGlobal('fetch', mockOR({}));
+    const p = await extractProfile('resume', 'k', 'm');
+    expect(p).toMatchObject({
+      targetRole: '',
+      level: 'senior',
+      yearsOfExperience: null,
+      stackSignals: [],
+      employmentTypes: [],
+      compFloor: null,
+      locationPreference: 'remote',
+      country: null,
+      preferredLocations: [],
+      requiresSponsorship: false,
+      dealBreakers: [],
+      companyStages: [],
+      companySize: null,
+      equityImportance: null,
+      industriesToExclude: [],
+      jobSearchStatus: null,
+    });
+  });
+
+  it('coerces invalid level to senior', async () => {
+    vi.stubGlobal('fetch', mockOR({ ...PAYLOAD, level: 'godlike' }));
+    const p = await extractProfile('resume', 'k', 'm');
     expect(p.level).toBe('senior');
-    expect(p.compFloor).toBe(200000);
+  });
+
+  it('coerces invalid locationPreference to remote', async () => {
+    vi.stubGlobal('fetch', mockOR({ ...PAYLOAD, locationPreference: 'lunar' }));
+    const p = await extractProfile('resume', 'k', 'm');
     expect(p.locationPreference).toBe('remote');
-    expect(p.stackSignals).toEqual(['Go', 'PostgreSQL', 'Kubernetes']);
-    expect(p.dealBreakers).toEqual(['crypto']);
   });
 
-  it('coerces an unknown level to "senior"', async () => {
-    mockLLM({ targetRole: 'Eng', level: 'lead', compFloor: null, location: 'remote', stackSignals: [], dealBreakers: [] });
-    expect((await extractProfile('text', 'key', 'model')).level).toBe('senior');
+  it('filters invalid employmentTypes', async () => {
+    vi.stubGlobal('fetch', mockOR({ ...PAYLOAD, employmentTypes: ['full-time', 'freelance', 'contract'] }));
+    const p = await extractProfile('resume', 'k', 'm');
+    expect(p.employmentTypes).toEqual(['full-time', 'contract']);
   });
 
-  it('coerces an unknown location to "remote"', async () => {
-    mockLLM({ targetRole: 'Eng', level: 'senior', compFloor: null, location: 'new york', stackSignals: [], dealBreakers: [] });
-    expect((await extractProfile('text', 'key', 'model')).locationPreference).toBe('remote');
+  it('filters invalid companyStages', async () => {
+    vi.stubGlobal('fetch', mockOR({ ...PAYLOAD, companyStages: ['series-A', 'growth', 'pre-IPO'] }));
+    const p = await extractProfile('resume', 'k', 'm');
+    expect(p.companyStages).toEqual(['growth']);
   });
 
-  it('caps stackSignals at 8 items', async () => {
-    mockLLM({ targetRole: 'Eng', level: 'senior', compFloor: null, location: 'remote', stackSignals: ['a','b','c','d','e','f','g','h','i','j'], dealBreakers: [] });
-    expect((await extractProfile('text', 'key', 'model')).stackSignals).toHaveLength(8);
+  it('coerces invalid companySize to null', async () => {
+    vi.stubGlobal('fetch', mockOR({ ...PAYLOAD, companySize: 'medium-large' }));
+    const p = await extractProfile('resume', 'k', 'm');
+    expect(p.companySize).toBeNull();
   });
 
-  it('handles null compFloor', async () => {
-    mockLLM({ targetRole: 'Eng', level: 'mid', compFloor: null, location: 'hybrid', stackSignals: [], dealBreakers: [] });
-    expect((await extractProfile('text', 'key', 'model')).compFloor).toBeNull();
-  });
-
-  it('throws on invalid JSON from LLM', async () => {
-    vi.mocked(openrouter.fetchCompletion).mockResolvedValueOnce('not json at all {{');
-    await expect(extractProfile('text', 'key', 'model')).rejects.toThrow('invalid JSON');
+  it('throws on invalid JSON', async () => {
+    vi.stubGlobal('fetch', mockOR('not json'));
+    await expect(extractProfile('resume', 'k', 'm')).rejects.toThrow('Model returned invalid JSON');
   });
 });
