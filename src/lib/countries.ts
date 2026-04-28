@@ -1,0 +1,15 @@
+export const COUNTRIES: readonly string[] = [
+  'United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Spain',
+  'Italy', 'Netherlands', 'Belgium', 'Sweden', 'Norway', 'Denmark', 'Finland',
+  'Poland', 'Portugal', 'Ireland', 'Austria', 'Switzerland', 'Czech Republic',
+  'Hungary', 'Greece', 'Turkey', 'Israel', 'United Arab Emirates', 'India',
+  'Pakistan', 'Bangladesh', 'Sri Lanka', 'Singapore', 'Japan', 'South Korea',
+  'China', 'Taiwan', 'Hong Kong', 'Australia', 'New Zealand', 'Indonesia',
+  'Malaysia', 'Philippines', 'Thailand', 'Vietnam', 'Mexico', 'Brazil',
+  'Argentina', 'Chile', 'Colombia', 'Peru', 'Uruguay', 'Costa Rica',
+  'South Africa', 'Nigeria', 'Kenya', 'Egypt', 'Morocco', 'Ghana',
+  'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Jordan', 'Lebanon',
+  'Russia', 'Ukraine', 'Romania', 'Bulgaria', 'Croatia', 'Serbia',
+  'Slovenia', 'Slovakia', 'Estonia', 'Latvia', 'Lithuania', 'Iceland',
+  'Luxembourg', 'Malta', 'Cyprus',
+];
