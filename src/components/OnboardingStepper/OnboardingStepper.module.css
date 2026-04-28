@@ -1,0 +1,75 @@
+.root {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 720px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.item:last-child {
+  flex: 0;
+}
+
+.stepButton, .stepStatic {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.stepButton {
+  cursor: pointer;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: 50%;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.dotActive {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.dotDone {
+  border-color: var(--border-strong);
+  background: var(--border-strong);
+}
+
+.label {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+}
+
+.labelActive {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.connector {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0 var(--space-2);
+}
+
+.connectorDone {
+  background: var(--border-strong);
+}
