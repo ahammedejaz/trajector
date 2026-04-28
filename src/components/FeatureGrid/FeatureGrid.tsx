@@ -26,24 +26,6 @@ const FEATURES: Feature[] = [
     body:
       'Use your OpenRouter key with Claude, GPT, Gemini, Llama. Switch any time, pay only for what you use.',
   },
-  {
-    tier: 'strong',
-    title: 'Country-aware scoring',
-    body:
-      'Only see jobs you can actually take, in your country or fully remote. The LLM filters for you.',
-  },
-  {
-    tier: 'decent',
-    title: 'Sponsorship-respectful',
-    body:
-      'Mark sponsorship needs once. Postings that explicitly exclude you score lower automatically.',
-  },
-  {
-    tier: 'skip',
-    title: 'Open-source, MIT',
-    body:
-      'Read the code, fork it, run it locally. No black box, no lock-in, no telemetry.',
-  },
 ];
 
 export function FeatureGrid() {
