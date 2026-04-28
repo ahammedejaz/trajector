@@ -26,6 +26,47 @@ describe('loadSettings', () => {
     localStorage.setItem('trajector_settings', 'not-json{{{');
     expect(loadSettings().openRouterKey).toBe('');
   });
+
+  it('drops legacy source keys from older app versions', () => {
+    // Simulate an older app version that had linkedin/workable/yc.
+    localStorage.setItem(
+      'trajector_settings',
+      JSON.stringify({
+        openRouterKey: 'sk-or-old',
+        model: 'anthropic/claude-sonnet-4-6',
+        sources: {
+          linkedin: true,
+          greenhouse: true,
+          lever: true,
+          workable: true,
+          yc: false,
+          ashby: false,
+        },
+      }),
+    );
+    const s = loadSettings();
+    // Only the 3 valid keys should be present.
+    expect(Object.keys(s.sources).sort()).toEqual(['ashby', 'greenhouse', 'lever']);
+    // Whitelisted values from storage are preserved.
+    expect(s.sources.greenhouse).toBe(true);
+    expect(s.sources.lever).toBe(true);
+    expect(s.sources.ashby).toBe(false);
+  });
+
+  it('falls back to defaults for source keys not in stored value', () => {
+    localStorage.setItem(
+      'trajector_settings',
+      JSON.stringify({
+        openRouterKey: 'k',
+        model: 'm',
+        sources: { greenhouse: false }, // ashby and lever absent
+      }),
+    );
+    const s = loadSettings();
+    expect(s.sources.greenhouse).toBe(false);
+    expect(s.sources.ashby).toBe(true);  // default
+    expect(s.sources.lever).toBe(true);  // default
+  });
 });
 
 describe('saveSettings', () => {
