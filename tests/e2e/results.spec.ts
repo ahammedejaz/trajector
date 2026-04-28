@@ -7,10 +7,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MOCK_PROFILE = {
   targetRole: 'Senior Backend Engineer',
   level: 'senior',
-  compFloor: 200000,
-  location: 'remote',
+  yearsOfExperience: null,
   stackSignals: ['Go', 'PostgreSQL'],
+  employmentTypes: [],
+  compFloor: 200000,
+  locationPreference: 'remote',
+  country: null,
+  preferredLocations: [],
+  requiresSponsorship: false,
   dealBreakers: [],
+  companyStages: [],
+  companySize: null,
+  equityImportance: null,
+  industriesToExclude: [],
+  jobSearchStatus: null,
 };
 
 const MOCK_JOBS = [

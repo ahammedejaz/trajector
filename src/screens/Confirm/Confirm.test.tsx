@@ -7,10 +7,20 @@ import type { Profile } from '../../types';
 const SAMPLE: Profile = {
   targetRole: 'Senior Backend Engineer',
   level: 'senior',
-  compFloor: 200000,
-  location: 'remote',
+  yearsOfExperience: null,
   stackSignals: ['Go', 'PostgreSQL'],
+  employmentTypes: [],
+  compFloor: 200000,
+  locationPreference: 'remote',
+  country: null,
+  preferredLocations: [],
+  requiresSponsorship: false,
   dealBreakers: [],
+  companyStages: [],
+  companySize: null,
+  equityImportance: null,
+  industriesToExclude: [],
+  jobSearchStatus: null,
 };
 
 describe('Confirm screen', () => {

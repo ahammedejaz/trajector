@@ -87,7 +87,7 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
     return m;
   }, [jobs]);
 
-  const subtitle = `${profile.targetRole} · ${profile.level} · ${profile.location}`;
+  const subtitle = `${profile.targetRole} · ${profile.level} · ${profile.locationPreference}`;
 
   return (
     <div className={styles.root}>

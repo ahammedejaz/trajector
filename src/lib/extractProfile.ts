@@ -54,13 +54,23 @@ export async function extractProfile(
   return {
     targetRole: typeof parsed.targetRole === 'string' ? parsed.targetRole : '',
     level: coerceLevel(parsed.level),
-    compFloor: typeof parsed.compFloor === 'number' ? parsed.compFloor : null,
-    location: coerceLocation(parsed.location),
+    yearsOfExperience: null,
     stackSignals: Array.isArray(parsed.stackSignals)
       ? (parsed.stackSignals as unknown[]).filter((s): s is string => typeof s === 'string').slice(0, 8)
       : [],
+    employmentTypes: [],
+    compFloor: typeof parsed.compFloor === 'number' ? parsed.compFloor : null,
+    locationPreference: coerceLocation(parsed.location ?? parsed.locationPreference),
+    country: null,
+    preferredLocations: [],
+    requiresSponsorship: false,
     dealBreakers: Array.isArray(parsed.dealBreakers)
       ? (parsed.dealBreakers as unknown[]).filter((s): s is string => typeof s === 'string')
       : [],
+    companyStages: [],
+    companySize: null,
+    equityImportance: null,
+    industriesToExclude: [],
+    jobSearchStatus: null,
   };
 }
