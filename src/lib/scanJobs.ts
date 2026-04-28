@@ -5,8 +5,9 @@ import { filterJobsByProfile } from './ats/filterJobs';
 import { COMPANIES } from './companies';
 import type { RawJob } from './ats/types';
 
-const TOP_N = 30;
-const MAX_DESC_CHARS = 2000;
+const TOP_N = 20;
+const MAX_DESC_CHARS = 600;
+const SCORING_MAX_TOKENS = 4096;
 
 const SOURCE_LABELS: Record<SourceKey, string> = {
   greenhouse: 'Greenhouse',
@@ -27,12 +28,15 @@ interface LlmResponse {
 }
 
 function buildScoringPrompt(): string {
-  return `You are a job-search assistant. The user's profile is provided as JSON. Below it is a JSON array of REAL job postings fetched from public APIs. Score each job 0-100 for how well it matches the user.
+  return `You are a job-search assistant. The user's profile and a JSON array of REAL job postings are provided. Score each job 0-100 for how well it matches the user.
 
-Return ONLY a JSON object: { "jobs": [ { "id": <job.id>, "score": 0-100, "reason": <one sentence> }, ... ] }
+Return ONLY a JSON object — no prose, no markdown fences, no commentary:
+{ "jobs": [ { "id": <job.id>, "score": 0-100, "reason": <one sentence> }, ... ] }
+
+Rules:
 - "id" must be the EXACT id from the input job. Do NOT invent ids.
-- "score" is 0-100; use the full range. ~4 strong (>=80), ~12 decent (50-79), the rest can be skip (<50).
-- "reason" is one short sentence justifying the score.
+- "score" is 0-100; use the full range. Some strong (>=80), some decent (50-79), some skip (<50).
+- "reason" is one short sentence justifying the score. Keep it under 20 words.
 
 Scoring factors (in order of weight):
 1. Stack alignment — does the job mention the candidate's stackSignals?
@@ -43,7 +47,7 @@ Scoring factors (in order of weight):
 6. Company stages / size / equity / industries — soft modifiers
 7. Deal-breakers — if any dealBreaker keyword appears in description, score lower
 
-Be honest. Postings that look great should score high; obvious mismatches low. The user trusts that low scores are skipped, so don't inflate.`;
+Be honest. Postings that look great should score high; obvious mismatches low. Don't inflate.`;
 }
 
 function summarizeJob(j: RawJob): unknown {
@@ -63,6 +67,27 @@ function summarizeJob(j: RawJob): unknown {
 function clampScore(raw: unknown): number {
   const n = typeof raw === 'number' ? raw : 0;
   return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+/**
+ * Lenient JSON extraction. LLMs sometimes wrap JSON in markdown fences
+ * or add preamble/postamble text even when told not to. We strip fences
+ * and slice from first `{` to last `}` before parsing.
+ */
+function extractJson(raw: string): unknown {
+  let text = raw.trim();
+  // Strip ```json ... ``` or ``` ... ``` fences if present
+  const fenceMatch = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fenceMatch) {
+    text = fenceMatch[1].trim();
+  }
+  // If the text still has surrounding noise, slice to the outermost braces.
+  const first = text.indexOf('{');
+  const last = text.lastIndexOf('}');
+  if (first !== -1 && last > first) {
+    text = text.slice(first, last + 1);
+  }
+  return JSON.parse(text);
 }
 
 export async function scanJobs(
@@ -90,14 +115,22 @@ export async function scanJobs(
     2,
   );
 
-  const raw = await fetchCompletion(apiKey, model, [
-    { role: 'system', content: system },
-    { role: 'user', content: user },
-  ]);
+  const raw = await fetchCompletion(
+    apiKey,
+    model,
+    [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    {
+      maxTokens: SCORING_MAX_TOKENS,
+      jsonResponse: true,
+    },
+  );
 
   let parsed: LlmResponse;
   try {
-    parsed = JSON.parse(raw) as LlmResponse;
+    parsed = extractJson(raw) as LlmResponse;
   } catch {
     throw new Error('Model returned invalid JSON');
   }

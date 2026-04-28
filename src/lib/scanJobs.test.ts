@@ -141,4 +141,41 @@ describe('scanJobs (real jobs + LLM scoring)', () => {
     const result = await scanJobs(PROFILE, SOURCES, 'k', 'm');
     expect(result[0].applyUrl).toBe('https://boards.greenhouse.io/stripe/jobs/1');
   });
+
+  it('parses JSON wrapped in ```json fences', async () => {
+    const fenced = '```json\n{"jobs":[{"id":"' + RAW_JOB.id + '","score":77,"reason":"ok"}]}\n```';
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: fenced } }] }),
+    }));
+    const result = await scanJobs(PROFILE, SOURCES, 'k', 'm');
+    expect(result[0].score).toBe(77);
+  });
+
+  it('parses JSON when LLM adds preamble or postamble text', async () => {
+    const noisy = 'Sure, here are the scores:\n{"jobs":[{"id":"' + RAW_JOB.id + '","score":81,"reason":"ok"}]}\nLet me know if you need anything else.';
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: noisy } }] }),
+    }));
+    const result = await scanJobs(PROFILE, SOURCES, 'k', 'm');
+    expect(result[0].score).toBe(81);
+  });
+
+  it('requests json_object response_format and a generous max_tokens', async () => {
+    let capturedBody: string | null = null;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (_url: string, init: RequestInit) => {
+      capturedBody = init.body as string;
+      return {
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: JSON.stringify({ jobs: [{ id: RAW_JOB.id, score: 80, reason: 'r' }] }) } }],
+        }),
+      };
+    }));
+    await scanJobs(PROFILE, SOURCES, 'k', 'm');
+    expect(capturedBody).toContain('"response_format"');
+    expect(capturedBody).toContain('"json_object"');
+    expect(capturedBody).toContain('"max_tokens"');
+  });
 });
