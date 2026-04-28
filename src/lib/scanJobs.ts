@@ -2,6 +2,7 @@ import { fetchCompletion } from './openrouter';
 import type { Profile, ScoredJob, SourceKey } from '../types';
 import { fetchAllJobs } from './ats/fetchAll';
 import { filterJobsByProfile } from './ats/filterJobs';
+import { filterByLocation } from './locationMatch';
 import { COMPANIES } from './companies';
 import type { RawJob } from './ats/types';
 
@@ -102,7 +103,10 @@ export async function scanJobs(
   if (enabledCompanies.length === 0) return [];
 
   const fetched = await fetchAllJobs(enabledCompanies);
-  const filtered = filterJobsByProfile(fetched.jobs, profile, TOP_N);
+  // Hard location filter: drop jobs that violate profile.country / locationPreference
+  // before paying the LLM scoring cost.
+  const locationOk = filterByLocation(fetched.jobs, profile);
+  const filtered = filterJobsByProfile(locationOk, profile, TOP_N);
   if (filtered.length === 0) return [];
 
   const system = buildScoringPrompt();
