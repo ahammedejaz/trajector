@@ -1,9 +1,21 @@
 .row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) 0;
   font-size: var(--font-size-caption);
+  overflow: hidden;
+}
+
+.row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--bg-surface-2);
+  opacity: 0;
+  transform: translateX(-100%);
 }
 
 .glyph {
@@ -44,5 +56,22 @@
 @media (prefers-reduced-motion: reduce) {
   .glyph.scanning {
     animation: none;
+  }
+}
+
+.scanningRow::before {
+  opacity: 0.35;
+  animation: sweep 1.6s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanningRow::before {
+    animation: none;
+    opacity: 0;
   }
 }

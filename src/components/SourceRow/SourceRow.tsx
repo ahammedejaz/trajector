@@ -23,7 +23,7 @@ function statusText(status: SourceStatus, count?: number): string {
 
 export function SourceRow({ label, status, count }: Props) {
   return (
-    <div className={styles.row}>
+    <div className={`${styles.row}${status === 'scanning' ? ` ${styles.scanningRow}` : ''}`}>
       <span className={`${styles.glyph} ${styles[status]}`}>{GLYPH[status]}</span>
       <span className={styles.label}>{label}</span>
       <span className={styles.status}>{statusText(status, count)}</span>
