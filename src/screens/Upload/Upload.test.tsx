@@ -57,4 +57,16 @@ describe('Upload screen', () => {
       expect(screen.getByText(/couldn't read this file/i)).toBeInTheDocument()
     );
   });
+
+  it('shows an analyze error message when analyzeError prop is set', () => {
+    render(
+      <Upload
+        onResumeParsed={() => {}}
+        analyzeError="Couldn't analyze your resume. Check your OpenRouter key in Settings."
+      />,
+    );
+    expect(
+      screen.getByText(/couldn't analyze your resume/i),
+    ).toBeInTheDocument();
+  });
 });

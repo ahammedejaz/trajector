@@ -6,9 +6,10 @@ import styles from './Upload.module.css';
 
 interface UploadProps {
   onResumeParsed: (resume: ResumeText) => void;
+  analyzeError?: string | null;
 }
 
-export function Upload({ onResumeParsed }: UploadProps) {
+export function Upload({ onResumeParsed, analyzeError }: UploadProps) {
   const [zoneState, setZoneState] = useState<DropZoneState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
@@ -24,6 +25,12 @@ export function Upload({ onResumeParsed }: UploadProps) {
     }
   };
 
+  const displayError =
+    zoneState === 'idle' && analyzeError ? analyzeError : errorMessage;
+
+  const displayState: DropZoneState =
+    zoneState === 'idle' && analyzeError ? 'error' : zoneState;
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>Trajector</div>
@@ -34,8 +41,8 @@ export function Upload({ onResumeParsed }: UploadProps) {
             <p className={styles.subhead}>PDF, DOCX, or markdown · stays on your machine</p>
           </div>
           <DropZone
-            state={zoneState}
-            errorMessage={errorMessage}
+            state={displayState}
+            errorMessage={displayError}
             onFileSelected={handleFile}
           />
           <p className={styles.reassurance}>
