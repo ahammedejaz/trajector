@@ -31,6 +31,12 @@
   }
 }
 
+@media (width <= 600px) {
+  .root::before {
+    display: none;
+  }
+}
+
 .header {
   margin-bottom: var(--space-3);
   padding-bottom: var(--space-3);

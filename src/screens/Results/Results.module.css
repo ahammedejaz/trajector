@@ -9,7 +9,7 @@
 
 @media (width <= 880px) {
   .root {
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 }
 

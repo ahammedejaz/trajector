@@ -33,3 +33,9 @@
   outline: var(--border-width) solid var(--accent);
   outline-offset: -1px;
 }
+
+@media (width <= 640px) {
+  .option {
+    min-height: 36px;
+  }
+}
