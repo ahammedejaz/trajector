@@ -5,7 +5,7 @@ import { extractProfile } from './lib/extractProfile';
 import { Upload } from './screens/Upload/Upload';
 import { Settings } from './screens/Settings/Settings';
 import { Confirm } from './screens/Confirm/Confirm';
-import { StubScan } from './screens/StubScan/StubScan';
+import { Results } from './screens/Results/Results';
 import styles from './App.module.css';
 
 export function App() {
@@ -59,11 +59,20 @@ export function App() {
     setScreen('results');
   }
 
-  function handleReset() {
+  function handleEditProfile() {
+    setScreen('confirm');
+  }
+
+  function handleSwitchResume() {
     setResume(null);
     setProfile(null);
     setAnalyzeError(null);
     setScreen('upload');
+  }
+
+  function handleOpenSettingsFromResults() {
+    setPrevScreen('results');
+    setScreen('settings');
   }
 
   if (screen === 'analyzing') {
@@ -95,7 +104,12 @@ export function App() {
   if (screen === 'results' && profile) {
     return (
       <div className={styles.root}>
-        <StubScan profile={profile} onReset={handleReset} />
+        <Results
+          profile={profile}
+          onEditProfile={handleEditProfile}
+          onSwitchResume={handleSwitchResume}
+          onOpenSettings={handleOpenSettingsFromResults}
+        />
       </div>
     );
   }
