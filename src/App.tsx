@@ -134,7 +134,15 @@ export function App() {
       {screen === 'analyzing' && (
         <div className={styles.screen}>
           <div className={styles.analyzing}>
+            <div className={styles.dots} aria-hidden="true">
+              <span className={`${styles.dot} ${styles.dotStrong}`} />
+              <span className={`${styles.dot} ${styles.dotDecent}`} />
+              <span className={`${styles.dot} ${styles.dotSkip}`} />
+            </div>
             <p className={styles.analyzingText}>Analyzing your resume…</p>
+            <p className={styles.analyzingSub}>
+              Extracting your profile from the resume — usually a few seconds.
+            </p>
           </div>
         </div>
       )}
