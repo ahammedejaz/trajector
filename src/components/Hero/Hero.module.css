@@ -89,6 +89,7 @@
   border-radius: var(--radius);
   cursor: pointer;
   transition: border-color var(--motion-fast) var(--easing-out);
+  min-height: 44px;
 }
 
 .secondary:hover {
@@ -142,6 +143,26 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (width <= 480px) {
+  .headline {
+    font-size: 40px;
+    line-height: 1.05;
+  }
+
+  .sub {
+    font-size: 17px;
+  }
+
+  .ctas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .secondary {
+    width: 100%;
   }
 }
 

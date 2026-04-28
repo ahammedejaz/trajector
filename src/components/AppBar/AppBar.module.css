@@ -23,6 +23,9 @@
   padding: var(--space-1);
   border-radius: var(--radius);
   transition: background-color var(--motion-fast) var(--easing-out);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .brand:hover {
@@ -65,8 +68,21 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius);
   transition: background-color var(--motion-fast) var(--easing-out);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .cta:hover {
   background: var(--accent-hover);
+}
+
+@media (width <= 640px) {
+  .nav {
+    display: none;
+  }
+
+  .inner {
+    gap: var(--space-3);
+  }
 }

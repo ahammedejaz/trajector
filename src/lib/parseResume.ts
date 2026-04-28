@@ -1,5 +1,3 @@
-import { parsePdf } from './parsePdf';
-import { parseDocx } from './parseDocx';
 import type { ResumeText, ResumeFileKind } from '../types';
 
 function detectKind(file: File): ResumeFileKind {
@@ -39,10 +37,14 @@ export async function parseResume(file: File): Promise<ResumeText> {
   const buffer = await readFileBytes(file);
   const bytes = new Uint8Array(buffer);
 
+  // Dynamic imports keep pdfjs-dist (~1MB) and mammoth (~200KB) out of the
+  // initial bundle — they only load when a user actually drops a file.
   let text: string;
   if (kind === 'pdf') {
+    const { parsePdf } = await import('./parsePdf');
     text = await parsePdf(bytes);
   } else if (kind === 'docx') {
+    const { parseDocx } = await import('./parseDocx');
     text = await parseDocx(bytes);
   } else {
     text = new TextDecoder().decode(bytes);

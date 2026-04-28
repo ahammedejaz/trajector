@@ -2,11 +2,85 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trajector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>Trajector — Find the few jobs worth your time</title>
+    <meta
+      name="description"
+      content="Open-source AI job-search tool. Drop your resume, get scored matches across Greenhouse, Ashby, and Lever. Bring your own LLM key. 100% in your browser, no servers, no telemetry."
+    />
+    <meta
+      name="keywords"
+      content="ai job search, resume parser, job matching, candidate scoring, free job search tool, greenhouse jobs, ashby jobs, lever jobs, ai resume scanner, openrouter, claude, gpt, local-first"
+    />
+    <meta name="author" content="Syed Ejaz Ahammed" />
+    <meta name="robots" content="index, follow" />
+
+    <link rel="canonical" href="https://trajector.vercel.app/" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://trajector.vercel.app/" />
+    <meta property="og:title" content="Trajector — Find the few jobs worth your time" />
+    <meta
+      property="og:description"
+      content="Open-source AI job-search tool. Drop your resume, get scored matches across Greenhouse, Ashby, and Lever. Bring your own LLM key. 100% in your browser."
+    />
+    <meta property="og:image" content="https://trajector.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Trajector — find the few jobs worth your time" />
+    <meta property="og:site_name" content="Trajector" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://trajector.vercel.app/" />
+    <meta name="twitter:title" content="Trajector — Find the few jobs worth your time" />
+    <meta
+      name="twitter:description"
+      content="Open-source AI job-search tool. Drop your resume, get scored matches. Bring your own LLM key. 100% in your browser."
+    />
+    <meta name="twitter:image" content="https://trajector.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="Trajector — find the few jobs worth your time" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Trajector",
+        "description": "Open-source AI job-search tool. Drop your resume, get scored matches across Greenhouse, Ashby, and Lever via your own OpenRouter API key.",
+        "url": "https://trajector.vercel.app/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "browserRequirements": "Requires modern browser with JavaScript enabled.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "creator": {
+          "@type": "Person",
+          "name": "Syed Ejaz Ahammed",
+          "url": "https://github.com/ahammedejaz"
+        },
+        "license": "https://github.com/ahammedejaz/trajector/blob/main/LICENSE",
+        "sameAs": [
+          "https://github.com/ahammedejaz/trajector"
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      Trajector requires JavaScript to run. Please enable it in your browser settings.
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

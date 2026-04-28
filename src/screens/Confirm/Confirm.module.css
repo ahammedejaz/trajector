@@ -54,6 +54,7 @@
 @media (width <= 600px) {
   .row {
     grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
 }
 
