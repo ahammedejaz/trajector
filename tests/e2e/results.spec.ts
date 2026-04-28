@@ -1,0 +1,108 @@
+import { test, expect } from '@playwright/test';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const MOCK_PROFILE = {
+  targetRole: 'Senior Backend Engineer',
+  level: 'senior',
+  compFloor: 200000,
+  location: 'remote',
+  stackSignals: ['Go', 'PostgreSQL'],
+  dealBreakers: [],
+};
+
+const MOCK_JOBS = [
+  { id: 'j1', source: 'linkedin', company: 'Acme', title: 'Senior Backend Engineer', location: 'Remote', compRange: '$220k', description: 'Strong match description.', tags: ['Go'], score: 92, scoreReason: 'Stack matches.' },
+  { id: 'j2', source: 'greenhouse', company: 'Beta', title: 'Backend Engineer', location: 'Remote', compRange: null, description: 'Decent fit description.', tags: ['Go'], score: 65, scoreReason: 'Decent.' },
+  { id: 'j3', source: 'lever', company: 'Gamma', title: 'Junior Backend', location: 'Remote', compRange: null, description: 'Skip description.', tags: ['Go'], score: 30, scoreReason: 'Too junior.' },
+];
+
+async function setup({ page }: { page: import('@playwright/test').Page }) {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'trajector_settings',
+      JSON.stringify({
+        openRouterKey: 'sk-or-v1-test-key',
+        model: 'anthropic/claude-sonnet-4-6',
+        sources: { linkedin: true, greenhouse: true, lever: true, workable: false, yc: false },
+      }),
+    );
+  });
+
+  await page.route('**/openrouter.ai/api/v1/chat/completions', async (route) => {
+    const req = route.request();
+    const body = req.postDataJSON() as { messages: Array<{ role: string; content: string }> };
+    const lastUser = body.messages[body.messages.length - 1];
+    const content = lastUser.role === 'user' && lastUser.content.startsWith('{')
+      ? JSON.stringify(MOCK_JOBS)
+      : JSON.stringify(MOCK_PROFILE);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ choices: [{ message: { content } }] }),
+    });
+  });
+}
+
+test.describe('results flow', () => {
+  test.beforeEach(setup);
+
+  test('shows grouped strong/decent matches and skipped count', async ({ page }) => {
+    await page.goto('/');
+    const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
+    await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
+    await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: /start scanning/i }).click();
+
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Senior Backend Engineer').first()).toBeVisible();
+    await expect(page.getByText(/decent matches/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Backend Engineer at Beta/i })).toBeVisible();
+    await expect(page.getByText(/1 skipped/i)).toBeVisible();
+    await expect(page.getByText('Junior Backend')).toHaveCount(0);
+  });
+
+  test('opens side sheet with job detail on card click', async ({ page }) => {
+    await page.goto('/');
+    const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
+    await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
+    await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: /start scanning/i }).click();
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('button', { name: /Senior Backend Engineer at Acme/i }).click();
+    await expect(page.getByText('Strong match description.')).toBeVisible();
+    await expect(page.getByText(/why this score/i)).toBeVisible();
+
+    await page.getByRole('button', { name: /close/i }).click();
+    await expect(page.getByText('Strong match description.')).toHaveCount(0);
+  });
+
+  test('profile menu Switch resume returns to upload', async ({ page }) => {
+    await page.goto('/');
+    const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
+    await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
+    await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: /start scanning/i }).click();
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('button', { name: /profile menu/i }).click();
+    await page.getByRole('menuitem', { name: /switch resume/i }).click();
+    await expect(page.getByText('Drop your resume to begin')).toBeVisible();
+  });
+
+  test('profile menu Edit profile returns to Confirm', async ({ page }) => {
+    await page.goto('/');
+    const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
+    await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
+    await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: /start scanning/i }).click();
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('button', { name: /profile menu/i }).click();
+    await page.getByRole('menuitem', { name: /edit profile/i }).click();
+    await expect(page.getByText('Confirm your profile')).toBeVisible();
+  });
+});
