@@ -22,6 +22,11 @@
   --score-decent: #eab308;
   --score-skip: #525252;
 
+  /* Error state */
+  --error: #ef4444;
+  /* Text on --accent backgrounds */
+  --on-accent: #000;
+
   /* Geometry (spec §4.4) */
   --radius: 6px;
   --border-width: 1px;

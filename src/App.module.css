@@ -1,3 +1,15 @@
 .root {
   min-height: 100%;
 }
+
+.analyzing {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.analyzingText {
+  font-size: var(--font-size-body);
+  color: var(--text-secondary);
+}
