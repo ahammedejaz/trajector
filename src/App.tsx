@@ -56,7 +56,7 @@ export function App() {
 
   function handleConfirm(p: Profile) {
     setProfile(p);
-    setScreen('stubScan');
+    setScreen('results');
   }
 
   function handleReset() {
@@ -92,7 +92,7 @@ export function App() {
     );
   }
 
-  if (screen === 'stubScan' && profile) {
+  if (screen === 'results' && profile) {
     return (
       <div className={styles.root}>
         <StubScan profile={profile} onReset={handleReset} />

@@ -26,4 +26,30 @@ export interface AppSettings {
     yc: boolean;
   };
 }
-export type Screen = 'upload' | 'analyzing' | 'settings' | 'confirm' | 'stubScan';
+export type SourceKey = keyof AppSettings['sources'];
+export type ScoreTier = 'strong' | 'decent' | 'skip';
+export interface ScoredJob {
+  id: string;
+  source: SourceKey;
+  company: string;
+  title: string;
+  location: string;
+  compRange: string | null;
+  description: string;
+  tags: string[];
+  score: number;
+  scoreReason: string;
+}
+export type SourceStatus = 'queued' | 'scanning' | 'done' | 'error';
+export interface SourceState {
+  key: SourceKey;
+  label: string;
+  status: SourceStatus;
+}
+export interface ScanProgress {
+  sources: SourceState[];
+  jobs: ScoredJob[];
+  error: string | null;
+  finished: boolean;
+}
+export type Screen = 'upload' | 'analyzing' | 'settings' | 'confirm' | 'results';
