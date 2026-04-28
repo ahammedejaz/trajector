@@ -1,5 +1,14 @@
 import { fetchCompletion } from './openrouter';
-import type { Profile, Level, LocationPref } from '../types';
+import type {
+  Profile,
+  Level,
+  LocationPref,
+  EmploymentType,
+  CompanyStage,
+  CompanySize,
+  EquityImportance,
+  JobSearchStatus,
+} from '../types';
 
 const SYSTEM = `Extract structured profile data from this resume text. Return ONLY valid JSON — no markdown fences, no commentary, just the JSON object.
 
@@ -7,31 +16,59 @@ Schema:
 {
   "targetRole": string,
   "level": "junior" | "mid" | "senior" | "staff" | "principal",
-  "compFloor": number | null,
-  "location": "remote" | "hybrid" | "onsite",
+  "yearsOfExperience": number | null,
   "stackSignals": string[],
-  "dealBreakers": string[]
+  "employmentTypes": Array<"full-time" | "contract" | "part-time">,
+  "compFloor": number | null,
+  "locationPreference": "remote" | "hybrid" | "onsite" | "flexible",
+  "country": string | null,
+  "preferredLocations": string[],
+  "requiresSponsorship": boolean,
+  "dealBreakers": string[],
+  "companyStages": Array<"seed" | "early" | "growth" | "public">,
+  "companySize": "startup" | "mid" | "large" | "enterprise" | null,
+  "equityImportance": "dealbreaker" | "important" | "nice" | "irrelevant" | null,
+  "industriesToExclude": string[],
+  "jobSearchStatus": "active" | "open" | "passive" | null
 }
 
 Rules:
-- targetRole: infer the most recent or desired role title
-- level: infer from years of experience and last title; default "senior"
-- compFloor: extract if mentioned explicitly; otherwise null
-- location: default to "remote" if unclear
-- stackSignals: 5-8 technical skills, languages, and frameworks most relevant to this candidate
-- dealBreakers: only if explicitly mentioned in the resume; otherwise []`;
+- targetRole: most recent or desired role title
+- level: from years of experience and last title; default "senior"
+- yearsOfExperience: integer years from earliest dated role to most recent; null if not derivable
+- stackSignals: 5-8 most relevant technical skills/languages/frameworks
+- employmentTypes: based on resume signals (e.g. "Independent Contractor" → contract); default ["full-time"]
+- compFloor: only if explicitly mentioned; otherwise null
+- locationPreference: default "remote" if unclear
+- country: parse from address/location lines (e.g. "San Francisco, CA" → "United States"); null if absent
+- preferredLocations: any city/region mentioned as a preference; otherwise []
+- requiresSponsorship: only true if explicitly stated; otherwise false
+- companyStages: only fill if resume names target stages explicitly; otherwise []
+- companySize: only if inferable; otherwise null
+- equityImportance: only if explicit; otherwise null
+- industriesToExclude: only if explicit; otherwise []
+- jobSearchStatus: default null unless resume signals urgency`;
 
-const VALID_LEVELS = new Set<string>(['junior', 'mid', 'senior', 'staff', 'principal']);
-const VALID_LOCATIONS = new Set<string>(['remote', 'hybrid', 'onsite']);
+const VALID_LEVELS = new Set<Level>(['junior', 'mid', 'senior', 'staff', 'principal']);
+const VALID_LOCS = new Set<LocationPref>(['remote', 'hybrid', 'onsite', 'flexible']);
+const VALID_EMP = new Set<EmploymentType>(['full-time', 'contract', 'part-time']);
+const VALID_STAGE = new Set<CompanyStage>(['seed', 'early', 'growth', 'public']);
+const VALID_SIZE = new Set<CompanySize>(['startup', 'mid', 'large', 'enterprise']);
+const VALID_EQUITY = new Set<EquityImportance>(['dealbreaker', 'important', 'nice', 'irrelevant']);
+const VALID_STATUS = new Set<JobSearchStatus>(['active', 'open', 'passive']);
 
-function coerceLevel(raw: unknown): Level {
-  const s = String(raw).toLowerCase().trim();
-  return VALID_LEVELS.has(s) ? (s as Level) : 'senior';
+function pickEnum<T extends string>(raw: unknown, valid: Set<T>, fallback: T | null): T | null {
+  return typeof raw === 'string' && valid.has(raw as T) ? (raw as T) : fallback;
 }
 
-function coerceLocation(raw: unknown): LocationPref {
-  const s = String(raw).toLowerCase().trim();
-  return VALID_LOCATIONS.has(s) ? (s as LocationPref) : 'remote';
+function pickArray<T extends string>(raw: unknown, valid: Set<T>): T[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((v): v is T => typeof v === 'string' && valid.has(v as T));
+}
+
+function pickStringArray(raw: unknown, max: number): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((s): s is string => typeof s === 'string').slice(0, max);
 }
 
 export async function extractProfile(
@@ -53,24 +90,20 @@ export async function extractProfile(
 
   return {
     targetRole: typeof parsed.targetRole === 'string' ? parsed.targetRole : '',
-    level: coerceLevel(parsed.level),
-    yearsOfExperience: null,
-    stackSignals: Array.isArray(parsed.stackSignals)
-      ? (parsed.stackSignals as unknown[]).filter((s): s is string => typeof s === 'string').slice(0, 8)
-      : [],
-    employmentTypes: [],
+    level: (pickEnum(parsed.level, VALID_LEVELS, 'senior') ?? 'senior') as Level,
+    yearsOfExperience: typeof parsed.yearsOfExperience === 'number' ? parsed.yearsOfExperience : null,
+    stackSignals: pickStringArray(parsed.stackSignals, 8),
+    employmentTypes: pickArray(parsed.employmentTypes, VALID_EMP),
     compFloor: typeof parsed.compFloor === 'number' ? parsed.compFloor : null,
-    locationPreference: coerceLocation(parsed.location ?? parsed.locationPreference),
-    country: null,
-    preferredLocations: [],
-    requiresSponsorship: false,
-    dealBreakers: Array.isArray(parsed.dealBreakers)
-      ? (parsed.dealBreakers as unknown[]).filter((s): s is string => typeof s === 'string')
-      : [],
-    companyStages: [],
-    companySize: null,
-    equityImportance: null,
-    industriesToExclude: [],
-    jobSearchStatus: null,
+    locationPreference: (pickEnum(parsed.locationPreference, VALID_LOCS, 'remote') ?? 'remote') as LocationPref,
+    country: typeof parsed.country === 'string' && parsed.country.length > 0 ? parsed.country : null,
+    preferredLocations: pickStringArray(parsed.preferredLocations, 10),
+    requiresSponsorship: parsed.requiresSponsorship === true,
+    dealBreakers: pickStringArray(parsed.dealBreakers, 10),
+    companyStages: pickArray(parsed.companyStages, VALID_STAGE),
+    companySize: pickEnum(parsed.companySize, VALID_SIZE, null) as CompanySize | null,
+    equityImportance: pickEnum(parsed.equityImportance, VALID_EQUITY, null) as EquityImportance | null,
+    industriesToExclude: pickStringArray(parsed.industriesToExclude, 10),
+    jobSearchStatus: pickEnum(parsed.jobSearchStatus, VALID_STATUS, null) as JobSearchStatus | null,
   };
 }
