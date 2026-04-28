@@ -79,27 +79,6 @@
   margin-top: var(--space-3);
 }
 
-.primary {
-  background: var(--accent);
-  color: var(--on-accent);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-semibold);
-  padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background-color var(--motion-fast) var(--easing-out),
-              box-shadow var(--motion-fast) var(--easing-out),
-              transform var(--motion-fast) var(--easing-out);
-}
-
-.primary:hover {
-  background: var(--accent-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
 .secondary {
   background: transparent;
   color: var(--text-primary);
@@ -169,9 +148,5 @@
 @media (prefers-reduced-motion: reduce) {
   .left, .right {
     animation: none;
-  }
-
-  .primary {
-    transition: none;
   }
 }

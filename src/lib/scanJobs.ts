@@ -20,12 +20,25 @@ Each item:
   "company": string,
   "title": string,
   "location": string (e.g. "Remote (US)", "San Francisco, CA"),
-  "compRange": string | null (e.g. "$200k-$240k" or null),
-  "description": string (4-6 sentences, plausible posting prose),
+  "compRange": string | null (e.g. "$200k-$240k base + 0.05% equity" or null),
+  "description": string (4-6 sentences, plausible posting prose, sets up the role),
   "tags": string[] (3-5 tech / domain tags),
   "score": number 0-100 (how well this matches the candidate),
-  "scoreReason": string (one sentence justifying the score)
+  "scoreReason": string (one sentence justifying the score),
+  "applyUrl": string (a plausible apply-page URL — see source patterns below),
+  "responsibilities": string[] (4-6 bullet points, each one short sentence describing day-to-day work),
+  "requirements": string[] (4-6 bullet points, each one short sentence describing must-haves),
+  "benefits": string[] (3-5 bullet points like "401k match", "Unlimited PTO", "Remote stipend"),
+  "experienceYears": string | null (e.g. "5+ years", "Senior level", or null),
+  "companyBlurb": string | null (1-2 sentences about the company — what they do, stage, vibe)
 }
+
+URL patterns by source:
+- linkedin: https://www.linkedin.com/jobs/view/{slug}-{id}
+- greenhouse: https://boards.greenhouse.io/{company-slug}/jobs/{id}
+- lever: https://jobs.lever.co/{company-slug}/{id}
+- workable: https://apply.workable.com/{company-slug}/j/{id}
+- yc: https://www.workatastartup.com/jobs/{id}
 
 Rules:
 - Distribute postings across the enabled sources (don't put them all on one)
@@ -38,7 +51,24 @@ Rules:
 - EQUITY: if equityImportance is "dealbreaker", postings without equity score very low; if "irrelevant", treat equity as neutral
 - INDUSTRIES TO EXCLUDE: avoid generating postings in those industries
 - EMPLOYMENT TYPES: contract roles for full-time-only candidates score lower, and vice versa
-- Vary companies; no duplicates`;
+- Vary companies; no duplicates
+- Make responsibilities, requirements, benefits CONCRETE and specific to the role — not generic placeholders`;
+}
+
+function fallbackApplyUrl(source: SourceKey, company: string, id: string): string {
+  const slug = company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  switch (source) {
+    case 'linkedin':
+      return `https://www.linkedin.com/jobs/view/${slug}-${id}`;
+    case 'greenhouse':
+      return `https://boards.greenhouse.io/${slug}/jobs/${id}`;
+    case 'lever':
+      return `https://jobs.lever.co/${slug}/${id}`;
+    case 'workable':
+      return `https://apply.workable.com/${slug}/j/${id}`;
+    case 'yc':
+      return `https://www.workatastartup.com/jobs/${id}`;
+  }
 }
 
 function coerceJob(raw: unknown, enabledSources: SourceKey[]): ScoredJob | null {
@@ -53,10 +83,12 @@ function coerceJob(raw: unknown, enabledSources: SourceKey[]): ScoredJob | null 
     : enabledSources[0];
   const rawScore = typeof r.score === 'number' ? r.score : 0;
   const score = Math.max(0, Math.min(100, Math.round(rawScore)));
+  const id = r.id;
+  const company = r.company;
   return {
-    id: r.id,
+    id,
     source,
-    company: r.company,
+    company,
     title: r.title,
     location: typeof r.location === 'string' ? r.location : 'Remote',
     compRange: typeof r.compRange === 'string' ? r.compRange : null,
@@ -64,6 +96,20 @@ function coerceJob(raw: unknown, enabledSources: SourceKey[]): ScoredJob | null 
     tags: Array.isArray(r.tags) ? r.tags.filter((t): t is string => typeof t === 'string').slice(0, 5) : [],
     score,
     scoreReason: typeof r.scoreReason === 'string' ? r.scoreReason : '',
+    applyUrl: typeof r.applyUrl === 'string' && r.applyUrl.length > 0
+      ? r.applyUrl
+      : fallbackApplyUrl(source, company, id),
+    responsibilities: Array.isArray(r.responsibilities)
+      ? r.responsibilities.filter((s): s is string => typeof s === 'string').slice(0, 6)
+      : [],
+    requirements: Array.isArray(r.requirements)
+      ? r.requirements.filter((s): s is string => typeof s === 'string').slice(0, 6)
+      : [],
+    benefits: Array.isArray(r.benefits)
+      ? r.benefits.filter((s): s is string => typeof s === 'string').slice(0, 5)
+      : [],
+    experienceYears: typeof r.experienceYears === 'string' && r.experienceYears.length > 0 ? r.experienceYears : null,
+    companyBlurb: typeof r.companyBlurb === 'string' && r.companyBlurb.length > 0 ? r.companyBlurb : null,
   };
 }
 

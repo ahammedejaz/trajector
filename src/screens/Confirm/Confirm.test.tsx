@@ -70,9 +70,11 @@ describe('Confirm screen', () => {
   it('expands the Logistics section on click', async () => {
     const user = userEvent.setup();
     render(<Confirm profile={PROFILE} onConfirm={() => {}} />);
-    expect(screen.queryByLabelText(/comp floor/i)).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /logistics/i }));
-    expect(screen.getByLabelText(/comp floor/i)).toBeInTheDocument();
+    // Closed: aria-expanded false on header
+    const logisticsHeader = screen.getByRole('button', { name: /logistics/i });
+    expect(logisticsHeader).toHaveAttribute('aria-expanded', 'false');
+    await user.click(logisticsHeader);
+    expect(logisticsHeader).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('disables the primary CTA when targetRole is empty', () => {

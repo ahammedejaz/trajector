@@ -49,6 +49,12 @@ describe('scanJobs', () => {
         tags: ['Go', 'Postgres'],
         score: 92,
         scoreReason: 'Stack and seniority match.',
+        applyUrl: 'https://www.linkedin.com/jobs/view/acme-j1',
+        responsibilities: ['Own the backend stack'],
+        requirements: ['5+ years Go experience'],
+        benefits: ['Remote stipend'],
+        experienceYears: '5+ years',
+        companyBlurb: 'Acme builds developer tools.',
       },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
@@ -59,8 +65,8 @@ describe('scanJobs', () => {
 
   it('clamps scores to 0-100', async () => {
     const payload = [
-      { id: 'a', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 150, scoreReason: 'r' },
-      { id: 'b', source: 'linkedin', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: -10, scoreReason: 'r' },
+      { id: 'a', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 150, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'b', source: 'linkedin', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: -10, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
@@ -70,9 +76,9 @@ describe('scanJobs', () => {
 
   it('drops records missing required fields', async () => {
     const payload = [
-      { id: 'good', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r' },
-      { id: 'bad-no-title', source: 'linkedin', company: 'A', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r' },
-      { source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r' },
+      { id: 'good', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'bad-no-title', source: 'linkedin', company: 'A', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
@@ -82,8 +88,8 @@ describe('scanJobs', () => {
 
   it('dedupes by id', async () => {
     const payload = [
-      { id: 'x', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r' },
-      { id: 'x', source: 'linkedin', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: 70, scoreReason: 'r' },
+      { id: 'x', source: 'linkedin', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+      { id: 'x', source: 'linkedin', company: 'B', title: 'T', location: 'Remote', description: 'd', tags: [], score: 70, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
@@ -93,7 +99,7 @@ describe('scanJobs', () => {
 
   it('rewrites unknown source to first enabled source', async () => {
     const payload = [
-      { id: 'a', source: 'wellfound', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r' },
+      { id: 'a', source: 'wellfound', company: 'A', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
     ];
     vi.stubGlobal('fetch', mockOR(payload));
     const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
@@ -124,5 +130,23 @@ describe('scanJobs', () => {
     }));
     await scanJobs(PROFILE, SOURCES, 'k', 'm');
     expect(capturedBody).toContain('United States');
+  });
+
+  it('falls back to a templated applyUrl when missing', async () => {
+    const payload = [
+      { id: 'job-1', source: 'greenhouse', company: 'Acme Corp', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r' },
+    ];
+    vi.stubGlobal('fetch', mockOR(payload));
+    const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
+    expect(jobs[0].applyUrl).toBe('https://boards.greenhouse.io/acme-corp/jobs/job-1');
+  });
+
+  it('preserves applyUrl from the model when provided', async () => {
+    const payload = [
+      { id: 'j1', source: 'linkedin', company: 'C', title: 'T', location: 'Remote', description: 'd', tags: [], score: 80, scoreReason: 'r', applyUrl: 'https://example.com/apply' },
+    ];
+    vi.stubGlobal('fetch', mockOR(payload));
+    const jobs = await scanJobs(PROFILE, SOURCES, 'k', 'm');
+    expect(jobs[0].applyUrl).toBe('https://example.com/apply');
   });
 });

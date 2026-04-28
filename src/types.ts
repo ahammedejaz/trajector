@@ -57,6 +57,13 @@ export interface ScoredJob {
   tags: string[];
   score: number;
   scoreReason: string;
+  // NEW
+  applyUrl: string;
+  responsibilities: string[];
+  requirements: string[];
+  benefits: string[];
+  experienceYears: string | null;  // e.g. "5+ years"
+  companyBlurb: string | null;     // 1-2 sentences about the company
 }
 export type SourceStatus = 'queued' | 'scanning' | 'done' | 'error';
 export interface SourceState {

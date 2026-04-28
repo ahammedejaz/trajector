@@ -28,7 +28,12 @@ export function Disclosure({ title, children, defaultOpen = false, open, onOpenC
         <span className={styles.title}>{title}</span>
         {rightSlot && <span className={styles.right}>{rightSlot}</span>}
       </button>
-      {isOpen && <div className={styles.body}>{children}</div>}
+      <div
+        className={`${styles.bodyWrap}${isOpen ? ` ${styles.bodyWrapOpen}` : ''}`}
+        aria-hidden={!isOpen}
+      >
+        <div className={styles.body}>{children}</div>
+      </div>
     </section>
   );
 }

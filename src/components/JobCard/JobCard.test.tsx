@@ -15,6 +15,12 @@ const JOB: ScoredJob = {
   tags: ['Go', 'Postgres', 'Kubernetes'],
   score: 92,
   scoreReason: 'Stack matches.',
+  applyUrl: '',
+  responsibilities: [],
+  requirements: [],
+  benefits: [],
+  experienceYears: null,
+  companyBlurb: null,
 };
 
 describe('JobCard', () => {
