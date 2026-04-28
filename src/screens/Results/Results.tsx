@@ -7,6 +7,7 @@ import { JobCard } from '../../components/JobCard/JobCard';
 import { SourceRow } from '../../components/SourceRow/SourceRow';
 import { SideSheet } from '../../components/SideSheet/SideSheet';
 import { ScoreDot } from '../../components/ScoreDot/ScoreDot';
+import { JobDetail } from '../../components/JobDetail/JobDetail';
 import { Sidebar } from '../../components/Sidebar/Sidebar';
 import { ProfileSummary } from '../../components/ProfileSummary/ProfileSummary';
 import { FilterGroup } from '../../components/FilterGroup/FilterGroup';
@@ -254,27 +255,7 @@ export function Results({ profile, onEditProfile, onSwitchResume, onOpenSettings
         onClose={() => setSelected(null)}
         title={selected?.title ?? ''}
       >
-        {selected && (
-          <div className={styles.sheet}>
-            <p className={styles.sheetMeta}>
-              {selected.company} · {selected.location}
-              {selected.compRange ? ` · ${selected.compRange}` : ''}
-            </p>
-            <div className={styles.sheetTags}>
-              {selected.tags.map((t) => (
-                <span key={t} className={styles.sheetTag}>{t}</span>
-              ))}
-            </div>
-            <p className={styles.sheetSection}>Description</p>
-            <p className={styles.sheetBody}>{selected.description}</p>
-            <p className={styles.sheetSection}>Why this score</p>
-            <p className={styles.sheetBody}>
-              <ScoreDot tier={scoreTier(selected.score)} ariaLabel={`Score ${selected.score}`} />
-              <span className={styles.sheetScore}>{selected.score}</span>
-              {selected.scoreReason}
-            </p>
-          </div>
-        )}
+        {selected && <JobDetail job={selected} />}
       </SideSheet>
     </div>
   );
