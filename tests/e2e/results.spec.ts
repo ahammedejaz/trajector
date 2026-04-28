@@ -90,7 +90,7 @@ test.describe('results flow', () => {
     await expect(page.getByText('Strong match description.')).toHaveCount(0);
   });
 
-  test('profile menu Switch resume returns to upload', async ({ page }) => {
+  test('sidebar New scan returns to upload', async ({ page }) => {
     await page.goto('/');
     const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
     await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
@@ -98,12 +98,11 @@ test.describe('results flow', () => {
     await page.getByRole('button', { name: /start scanning/i }).click();
     await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole('button', { name: /profile menu/i }).click();
-    await page.getByRole('menuitem', { name: /switch resume/i }).click();
+    await page.getByRole('button', { name: /new scan/i }).click();
     await expect(page.getByText('Drop your resume to begin')).toBeVisible();
   });
 
-  test('profile menu Edit profile returns to Confirm', async ({ page }) => {
+  test('sidebar Edit profile returns to Confirm', async ({ page }) => {
     await page.goto('/');
     const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
     await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
@@ -111,8 +110,21 @@ test.describe('results flow', () => {
     await page.getByRole('button', { name: /start scanning/i }).click();
     await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole('button', { name: /profile menu/i }).click();
-    await page.getByRole('menuitem', { name: /edit profile/i }).click();
+    await page.getByRole('button', { name: /edit profile/i }).click();
     await expect(page.getByText('Confirm your profile')).toBeVisible();
+  });
+
+  test('filter by tier — Strong hides Decent matches', async ({ page }) => {
+    await page.goto('/');
+    const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
+    await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
+    await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: /start scanning/i }).click();
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+
+    await expect(page.getByText(/decent matches/i)).toBeVisible();
+    await page.getByRole('radio', { name: 'Strong' }).click();
+    await expect(page.getByText(/decent matches/i)).toHaveCount(0);
+    await expect(page.getByText(/strong matches/i)).toBeVisible();
   });
 });

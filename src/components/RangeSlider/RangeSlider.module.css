@@ -6,7 +6,6 @@
 
 .input {
   flex: 1;
-  -webkit-appearance: none;
   appearance: none;
   height: 4px;
   background: var(--bg-surface-2);
@@ -16,7 +15,7 @@
 }
 
 .input::-webkit-slider-thumb {
-  -webkit-appearance: none;
+  -webkit-appearance: none; /* stylelint-disable-line property-no-vendor-prefix */
   appearance: none;
   width: 14px;
   height: 14px;
