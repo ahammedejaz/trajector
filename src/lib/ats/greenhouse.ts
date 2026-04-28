@@ -31,19 +31,19 @@ function decodeEntities(text: string): string {
 
 /**
  * Strip HTML tags from a string, preserving line breaks where block tags appeared.
- * Greenhouse returns HTML in the `content` field. We render it as plain text so the LLM
- * scoring prompt isn't bloated with markup.
+ * Greenhouse returns the `content` field as HTML-entity-encoded markup
+ * (e.g. `&lt;p&gt;...&lt;/p&gt;`), so we decode entities FIRST to surface real
+ * angle brackets, then strip tags. Decoding after stripping would leave literal
+ * `<p>` text in the output (which is the bug this order fixes).
  */
 function htmlToPlain(html: string): string {
   if (!html) return '';
-  return decodeEntities(
-    html
-      .replace(/<\/(p|div|li|h[1-6]|br)>/gi, '\n')
-      .replace(/<br\s*\/?>(\s*\n)?/gi, '\n')
-      .replace(/<[^>]+>/g, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim(),
-  );
+  return decodeEntities(html)
+    .replace(/<\/(p|div|li|h[1-6]|br)>/gi, '\n')
+    .replace(/<br\s*\/?>(\s*\n)?/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 export async function fetchGreenhouseJobs(slug: string, companyName: string): Promise<RawJob[]> {

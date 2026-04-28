@@ -103,18 +103,36 @@ describe('fetchGreenhouseJobs', () => {
     });
   });
 
-  it('decodes HTML entities in description', async () => {
+  it('decodes plain HTML entities (& " \' nbsp) and strips any resulting tags', async () => {
     vi.stubGlobal('fetch', mockFetch({
       jobs: [{
         id: 1, title: 'T', absolute_url: 'https://x', location: { name: 'Remote' }, departments: [],
-        content: '&amp; &lt;tag&gt; &quot;quoted&quot; &#39;single&#39; &nbsp;',
+        content: 'Use &amp; in &quot;quoted&quot; &#39;single&#39; text&nbsp;here',
       }],
     }));
     const jobs = await fetchGreenhouseJobs('test', 'Test');
     expect(jobs[0].description).toContain('&');
-    expect(jobs[0].description).toContain('<tag>');
     expect(jobs[0].description).toContain('"quoted"');
     expect(jobs[0].description).toContain("'single'");
+    // &nbsp; becomes a space
+    expect(jobs[0].description).toContain('text here');
+  });
+
+  it('handles double-encoded HTML returned by Greenhouse production responses', async () => {
+    vi.stubGlobal('fetch', mockFetch({
+      jobs: [{
+        id: 1, title: 'T', absolute_url: 'https://x', location: { name: 'Remote' }, departments: [],
+        // Greenhouse returns content as entity-encoded HTML — angle brackets come through as &lt; / &gt;.
+        content: '&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;Airbnb was born in 2007.&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;The team:&lt;/strong&gt; great people.&lt;/p&gt;',
+      }],
+    }));
+    const jobs = await fetchGreenhouseJobs('test', 'Test');
+    expect(jobs[0].description).not.toContain('<');
+    expect(jobs[0].description).not.toContain('&lt;');
+    expect(jobs[0].description).not.toContain('class=');
+    expect(jobs[0].description).toContain('Airbnb was born in 2007');
+    expect(jobs[0].description).toContain('The team:');
+    expect(jobs[0].description).toContain('great people');
   });
 
   it('throws on non-OK response', async () => {
