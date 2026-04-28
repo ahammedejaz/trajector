@@ -24,9 +24,60 @@ const MOCK_PROFILE = {
 };
 
 const MOCK_JOBS = [
-  { id: 'j1', source: 'linkedin', company: 'Acme', title: 'Senior Backend Engineer', location: 'Remote', compRange: '$220k', description: 'Strong match description.', tags: ['Go'], score: 92, scoreReason: 'Stack matches.' },
-  { id: 'j2', source: 'greenhouse', company: 'Beta', title: 'Backend Engineer', location: 'Remote', compRange: null, description: 'Decent fit description.', tags: ['Go'], score: 65, scoreReason: 'Decent.' },
-  { id: 'j3', source: 'lever', company: 'Gamma', title: 'Junior Backend', location: 'Remote', compRange: null, description: 'Skip description.', tags: ['Go'], score: 30, scoreReason: 'Too junior.' },
+  {
+    id: 'j1',
+    source: 'linkedin',
+    company: 'Acme',
+    title: 'Senior Backend Engineer',
+    location: 'Remote',
+    compRange: '$220k',
+    description: 'Strong match description.',
+    tags: ['Go'],
+    score: 92,
+    scoreReason: 'Stack matches.',
+    applyUrl: 'https://example.com/apply',
+    responsibilities: ['Build services'],
+    requirements: ['7+ years Go'],
+    benefits: ['Remote'],
+    experienceYears: '7+ years',
+    companyBlurb: 'Acme builds.',
+  },
+  {
+    id: 'j2',
+    source: 'greenhouse',
+    company: 'Beta',
+    title: 'Backend Engineer',
+    location: 'Remote',
+    compRange: null,
+    description: 'Decent fit description.',
+    tags: ['Go'],
+    score: 65,
+    scoreReason: 'Decent.',
+    applyUrl: 'https://example.com/beta',
+    responsibilities: [],
+    requirements: [],
+    benefits: [],
+    experienceYears: null,
+    companyBlurb: null,
+  },
+  {
+    id: 'j3',
+    source: 'lever',
+    company: 'Gamma',
+    title: 'Junior Backend',
+    location: 'Remote',
+    compRange: null,
+    description: 'Skip description.',
+    tags: ['Go'],
+    score: 30,
+    scoreReason: 'Too junior.',
+    applyUrl: 'https://example.com/gamma',
+    responsibilities: [],
+    requirements: [],
+    benefits: [],
+    experienceYears: null,
+    companyBlurb: null,
+  },
 ];
 
 async function setup({ page }: { page: import('@playwright/test').Page }) {
@@ -84,7 +135,9 @@ test.describe('results flow', () => {
 
     await page.getByRole('button', { name: /Senior Backend Engineer at Acme/i }).click();
     await expect(page.getByText('Strong match description.')).toBeVisible();
-    await expect(page.getByText(/why this score/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /why this score/i })).toBeVisible();
+    // New: Apply button
+    await expect(page.getByRole('link', { name: /apply on linkedin/i })).toBeVisible();
 
     await page.getByRole('button', { name: /close/i }).click();
     await expect(page.getByText('Strong match description.')).toHaveCount(0);

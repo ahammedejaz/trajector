@@ -25,10 +25,22 @@ const MOCK_PROFILE = {
 
 const MOCK_JOBS = [
   {
-    id: 'j1', source: 'linkedin', company: 'Acme Corp', title: 'Senior Backend Engineer',
-    location: 'Remote (US)', compRange: '$220k-$260k',
+    id: 'j1',
+    source: 'linkedin',
+    company: 'Acme Corp',
+    title: 'Senior Backend Engineer',
+    location: 'Remote (US)',
+    compRange: '$220k-$260k',
     description: 'Build scalable Go services for our infra team.',
-    tags: ['Go', 'Postgres', 'Kubernetes'], score: 92, scoreReason: 'Stack matches.',
+    tags: ['Go', 'Postgres', 'Kubernetes'],
+    score: 92,
+    scoreReason: 'Stack matches.',
+    applyUrl: 'https://example.com/apply',
+    responsibilities: ['Build scalable services'],
+    requirements: ['5+ years Go'],
+    benefits: ['Remote'],
+    experienceYears: '5+ years',
+    companyBlurb: 'Acme Corp builds infrastructure.',
   },
 ];
 
