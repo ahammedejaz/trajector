@@ -39,4 +39,32 @@ describe('fetchCompletion', () => {
     vi.stubGlobal('fetch', makeFetch(true, 200, { choices: [] }));
     await expect(fetchCompletion('key', 'model', [{ role: 'user', content: 'hi' }])).rejects.toThrow(OpenRouterError);
   });
+
+  it('omits max_tokens and response_format when no options provided', async () => {
+    const spy = makeFetch(true, 200, { choices: [{ message: { content: 'ok' } }] });
+    vi.stubGlobal('fetch', spy);
+    await fetchCompletion('k', 'm', [{ role: 'user', content: 'hi' }]);
+    const [, init] = spy.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(body).not.toHaveProperty('max_tokens');
+    expect(body).not.toHaveProperty('response_format');
+  });
+
+  it('passes max_tokens through when provided', async () => {
+    const spy = makeFetch(true, 200, { choices: [{ message: { content: 'ok' } }] });
+    vi.stubGlobal('fetch', spy);
+    await fetchCompletion('k', 'm', [{ role: 'user', content: 'hi' }], { maxTokens: 4096 });
+    const [, init] = spy.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(body.max_tokens).toBe(4096);
+  });
+
+  it('sets response_format to json_object when jsonResponse is true', async () => {
+    const spy = makeFetch(true, 200, { choices: [{ message: { content: '{}' } }] });
+    vi.stubGlobal('fetch', spy);
+    await fetchCompletion('k', 'm', [{ role: 'user', content: 'hi' }], { jsonResponse: true });
+    const [, init] = spy.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string) as { response_format?: { type: string } };
+    expect(body.response_format).toEqual({ type: 'json_object' });
+  });
 });
