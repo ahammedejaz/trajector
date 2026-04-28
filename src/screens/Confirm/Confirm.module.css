@@ -45,7 +45,7 @@
   gap: var(--space-4);
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .row {
     grid-template-columns: 1fr;
   }
