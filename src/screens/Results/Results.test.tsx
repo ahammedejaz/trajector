@@ -24,9 +24,9 @@ const PROFILE: Profile = {
 };
 
 const JOBS: ScoredJob[] = [
-  { id: 'j1', source: 'linkedin', company: 'Acme', title: 'Senior Backend Engineer', location: 'Remote', compRange: '$220k', description: 'Build Go services for scale.', tags: ['Go'], score: 92, scoreReason: 'Match.' },
-  { id: 'j2', source: 'greenhouse', company: 'Beta', title: 'Backend Engineer', location: 'Remote', compRange: null, description: 'Ship features.', tags: ['Go'], score: 65, scoreReason: 'Decent.' },
-  { id: 'j3', source: 'lever', company: 'Gamma', title: 'Junior Backend', location: 'Remote', compRange: null, description: 'Junior.', tags: ['Go'], score: 30, scoreReason: 'Too junior.' },
+  { id: 'j1', source: 'linkedin', company: 'Acme', title: 'Senior Backend Engineer', location: 'Remote', compRange: '$220k', description: 'Build Go services for scale.', tags: ['Go'], score: 92, scoreReason: 'Match.', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+  { id: 'j2', source: 'greenhouse', company: 'Beta', title: 'Backend Engineer', location: 'Remote', compRange: null, description: 'Ship features.', tags: ['Go'], score: 65, scoreReason: 'Decent.', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
+  { id: 'j3', source: 'lever', company: 'Gamma', title: 'Junior Backend', location: 'Remote', compRange: null, description: 'Junior.', tags: ['Go'], score: 30, scoreReason: 'Too junior.', applyUrl: '', responsibilities: [], requirements: [], benefits: [], experienceYears: null, companyBlurb: null },
 ];
 
 vi.mock('../../lib/scanJobs', () => ({
