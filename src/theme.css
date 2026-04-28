@@ -1,0 +1,66 @@
+:root {
+  /* Surfaces (spec §4.1) */
+  --bg-canvas: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-surface-2: #1c1c1c;
+
+  /* Borders */
+  --border-subtle: #262626;
+  --border-strong: #404040;
+
+  /* Text */
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+
+  /* Accent (white-as-accent on dark) */
+  --accent: #fff;
+  --accent-hover: #e5e5e5;
+
+  /* Score tiers (spec §4.2) — only chromatic tokens in the system */
+  --score-strong: #22c55e;
+  --score-decent: #eab308;
+  --score-skip: #525252;
+
+  /* Geometry (spec §4.4) */
+  --radius: 6px;
+  --border-width: 1px;
+
+  /* Spacing scale (spec §4.5) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Typography sizes (spec §4.3) */
+  --font-size-h1: 32px;
+  --font-size-h2: 22px;
+  --font-size-h3: 16px;
+  --font-size-body: 14px;
+  --font-size-caption: 12px;
+  --font-size-mono: 13px;
+
+  /* Font weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Motion (spec §9) */
+  --motion-fast: 100ms;
+  --motion-base: 120ms;
+  --motion-sheet: 180ms;
+  --motion-pulse: 1.5s;
+  --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+    --motion-sheet: 0ms;
+    --motion-pulse: 0ms;
+  }
+}
