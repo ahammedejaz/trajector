@@ -1,0 +1,48 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-caption);
+}
+
+.glyph {
+  width: 16px;
+  text-align: center;
+  font-size: var(--font-size-body);
+  color: var(--text-tertiary);
+}
+
+.glyph.scanning {
+  color: var(--text-primary);
+  animation: pulse var(--motion-pulse) ease-in-out infinite;
+}
+
+.glyph.done {
+  color: var(--score-strong);
+}
+
+.glyph.error {
+  color: var(--error);
+}
+
+.label {
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+.status {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph.scanning {
+    animation: none;
+  }
+}
