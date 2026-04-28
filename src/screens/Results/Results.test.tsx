@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Results } from './Results';
 import type { Profile, ScoredJob } from '../../types';
@@ -7,12 +7,12 @@ import type { Profile, ScoredJob } from '../../types';
 const PROFILE: Profile = {
   targetRole: 'Senior Backend Engineer',
   level: 'senior',
-  yearsOfExperience: null,
+  yearsOfExperience: 7,
   stackSignals: ['Go'],
-  employmentTypes: [],
+  employmentTypes: ['full-time'],
   compFloor: 200000,
   locationPreference: 'remote',
-  country: null,
+  country: 'United States',
   preferredLocations: [],
   requiresSponsorship: false,
   dealBreakers: [],
@@ -50,7 +50,13 @@ vi.mock('../../lib/storage', () => ({
 
 import { scanJobs } from '../../lib/scanJobs';
 
-describe('Results screen', () => {
+const NOOP_PROPS = {
+  onEditProfile: () => {},
+  onSwitchResume: () => {},
+  onOpenSettings: () => {},
+};
+
+describe('Results screen — sidebar layout', () => {
   beforeEach(() => {
     vi.mocked(scanJobs).mockResolvedValue(JOBS);
   });
@@ -58,89 +64,78 @@ describe('Results screen', () => {
     vi.clearAllMocks();
   });
 
-  it('shows scanning state on mount', () => {
-    render(
-      <Results
-        profile={PROFILE}
-        onEditProfile={() => {}}
-        onSwitchResume={() => {}}
-        onOpenSettings={() => {}}
-      />,
-    );
-    expect(screen.getAllByText(/scanning/i).length).toBeGreaterThan(0);
-  });
-
-  it('renders strong and decent matches grouped after scan finishes', async () => {
-    render(
-      <Results
-        profile={PROFILE}
-        onEditProfile={() => {}}
-        onSwitchResume={() => {}}
-        onOpenSettings={() => {}}
-      />,
-    );
+  it('renders sidebar with profile summary', async () => {
+    render(<Results profile={PROFILE} {...NOOP_PROPS} />);
     await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
-    expect(screen.getByText('Senior Backend Engineer')).toBeInTheDocument();
-    expect(screen.getByText('Backend Engineer')).toBeInTheDocument();
+    expect(screen.getAllByText('Senior Backend Engineer').length).toBeGreaterThan(0);
+    expect(screen.getByText(/senior · 7 yrs · United States/)).toBeInTheDocument();
+  });
+
+  it('renders strong + decent matches and skipped count by default', async () => {
+    render(<Results profile={PROFILE} {...NOOP_PROPS} />);
+    await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
     expect(screen.getByText(/decent matches/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 skipped/i)).toBeInTheDocument();
   });
 
-  it('shows skipped count instead of skip cards', async () => {
-    render(
-      <Results
-        profile={PROFILE}
-        onEditProfile={() => {}}
-        onSwitchResume={() => {}}
-        onOpenSettings={() => {}}
-      />,
-    );
-    await waitFor(() => expect(screen.getByText(/1 skipped/i)).toBeInTheDocument());
-    expect(screen.queryByText('Junior Backend')).not.toBeInTheDocument();
-  });
-
-  it('opens side sheet when a job card is clicked', async () => {
+  it('filters by tier — selecting Strong hides decent matches', async () => {
     const user = userEvent.setup();
-    render(
-      <Results
-        profile={PROFILE}
-        onEditProfile={() => {}}
-        onSwitchResume={() => {}}
-        onOpenSettings={() => {}}
-      />,
-    );
-    await waitFor(() => expect(screen.getByText('Senior Backend Engineer')).toBeInTheDocument());
-    await user.click(screen.getByRole('button', { name: /Senior Backend Engineer at Acme/i }));
-    expect(screen.getByText('Build Go services for scale.')).toBeInTheDocument();
-    expect(screen.getByText(/why this score/i)).toBeInTheDocument();
+    render(<Results profile={PROFILE} {...NOOP_PROPS} />);
+    await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
+    await user.click(screen.getByRole('radio', { name: 'Strong' }));
+    expect(screen.queryByText(/decent matches/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/strong matches/i)).toBeInTheDocument();
+  });
+
+  it('filters by source — unchecking Greenhouse hides Beta', async () => {
+    const user = userEvent.setup();
+    render(<Results profile={PROFILE} {...NOOP_PROPS} />);
+    await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
+    expect(screen.getByText('Backend Engineer')).toBeInTheDocument();
+    await user.click(screen.getByRole('checkbox', { name: 'Greenhouse' }));
+    expect(screen.queryByText('Backend Engineer')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Senior Backend Engineer').length).toBeGreaterThan(0);
+  });
+
+  it('filters by min score — slider at 70 cuts the 65 job', async () => {
+    render(<Results profile={PROFILE} {...NOOP_PROPS} />);
+    await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
+    fireEvent.change(screen.getByRole('slider', { name: /min score/i }), { target: { value: '70' } });
+    expect(screen.queryByText('Backend Engineer')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Senior Backend Engineer').length).toBeGreaterThan(0);
+  });
+
+  it('triggers onSwitchResume from sidebar New scan button', async () => {
+    const user = userEvent.setup();
+    const onSwitchResume = vi.fn();
+    render(<Results profile={PROFILE} {...NOOP_PROPS} onSwitchResume={onSwitchResume} />);
+    await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /new scan/i }));
+    expect(onSwitchResume).toHaveBeenCalled();
+  });
+
+  it('triggers onEditProfile from sidebar Edit profile link', async () => {
+    const user = userEvent.setup();
+    const onEditProfile = vi.fn();
+    render(<Results profile={PROFILE} {...NOOP_PROPS} onEditProfile={onEditProfile} />);
+    await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /edit profile/i }));
+    expect(onEditProfile).toHaveBeenCalled();
+  });
+
+  it('triggers onOpenSettings from sidebar Settings link', async () => {
+    const user = userEvent.setup();
+    const onOpenSettings = vi.fn();
+    render(<Results profile={PROFILE} {...NOOP_PROPS} onOpenSettings={onOpenSettings} />);
+    await waitFor(() => expect(screen.getByText(/strong matches/i)).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /^settings$/i }));
+    expect(onOpenSettings).toHaveBeenCalled();
   });
 
   it('shows error message when scan fails', async () => {
     vi.mocked(scanJobs).mockRejectedValueOnce(new Error('API down'));
-    render(
-      <Results
-        profile={PROFILE}
-        onEditProfile={() => {}}
-        onSwitchResume={() => {}}
-        onOpenSettings={() => {}}
-      />,
-    );
+    render(<Results profile={PROFILE} {...NOOP_PROPS} />);
     await waitFor(() => expect(screen.getByText(/scan failed/i)).toBeInTheDocument());
     expect(screen.getByText(/API down/)).toBeInTheDocument();
-  });
-
-  it('triggers onEditProfile via profile menu', async () => {
-    const user = userEvent.setup();
-    const onEditProfile = vi.fn();
-    render(
-      <Results
-        profile={PROFILE}
-        onEditProfile={onEditProfile}
-        onSwitchResume={() => {}}
-        onOpenSettings={() => {}}
-      />,
-    );
-    await user.click(screen.getByRole('button', { name: /profile menu/i }));
-    await user.click(screen.getByRole('menuitem', { name: /edit profile/i }));
-    expect(onEditProfile).toHaveBeenCalled();
   });
 });

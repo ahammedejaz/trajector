@@ -1,19 +1,26 @@
 .root {
-  max-width: 880px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+@media (width <= 880px) {
+  .root {
+    flex-direction: column;
+  }
+}
+
+.main {
+  flex: 1;
   padding: var(--space-6) var(--space-5);
+  min-width: 0;
 }
 
 .header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
   margin-bottom: var(--space-6);
-}
-
-.headerLeft {
-  flex: 1;
 }
 
 .title {
@@ -88,6 +95,51 @@
   color: var(--text-tertiary);
   text-align: center;
   margin: var(--space-5) 0 0;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkRow input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settingsLink {
+  background: transparent;
+  border: none;
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: color var(--motion-fast) var(--easing-out);
+}
+
+.settingsLink:hover {
+  color: var(--text-primary);
+}
+
+.newScan {
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--easing-out);
+}
+
+.newScan:hover {
+  background: var(--accent-hover);
 }
 
 .sheet {
