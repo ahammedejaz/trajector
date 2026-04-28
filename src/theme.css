@@ -3,6 +3,7 @@
   --bg-canvas: #0a0a0a;
   --bg-surface: #141414;
   --bg-surface-2: #1c1c1c;
+  --bg-elevated: #242424;
 
   /* Borders */
   --border-subtle: #262626;
@@ -48,6 +49,15 @@
   --font-size-caption: 12px;
   --font-size-mono: 13px;
 
+  /* Display typography (Plan 5) */
+  --font-size-display: 72px;
+  --font-size-display-xl: 90px;
+
+  /* Letter-spacing scale */
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.03em;
+  --tracking-display: -0.04em;
+
   /* Font weights */
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -59,6 +69,12 @@
   --motion-sheet: 180ms;
   --motion-pulse: 1.5s;
   --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Shadow scale (Plan 5) — neutral black only, no gradients */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 40%);
+  --shadow-lg: 0 16px 48px rgb(0 0 0 / 50%);
+  --shadow-glow: 0 0 0 1px var(--border-strong), 0 8px 32px rgb(0 0 0 / 50%);
 }
 
 @media (prefers-reduced-motion: reduce) {

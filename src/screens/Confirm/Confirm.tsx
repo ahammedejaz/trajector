@@ -15,6 +15,7 @@ import { Toggle } from '../../components/Toggle/Toggle';
 import { MultiPill } from '../../components/MultiPill/MultiPill';
 import { Disclosure } from '../../components/Disclosure/Disclosure';
 import { CountrySelect } from '../../components/CountrySelect/CountrySelect';
+import { DotGrid } from '../../components/DotGrid/DotGrid';
 import { saveProfile } from '../../lib/profileStore';
 import styles from './Confirm.module.css';
 
@@ -131,6 +132,8 @@ export function Confirm({ profile: initial, onConfirm, onSaveAndExit }: Props) {
 
   return (
     <div className={styles.root}>
+      <DotGrid spacing={32} />
+      <div className={styles.content}>
       <header className={styles.header}>
         <h1 className={styles.title}>Confirm your profile</h1>
         <p className={styles.subtitle}>
@@ -402,6 +405,7 @@ export function Confirm({ profile: initial, onConfirm, onSaveAndExit }: Props) {
         >
           Start scanning →
         </button>
+      </div>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { Logo } from '../Logo/Logo';
 import styles from './AppBar.module.css';
 
 interface Props {
@@ -15,7 +16,7 @@ export function AppBar({ showCta, onBrandClick }: Props) {
           aria-label="Trajector home"
           onClick={onBrandClick}
         >
-          Trajector
+          <Logo />
         </button>
         <nav className={styles.nav}>
           <a className={styles.link} href="#features">Product</a>

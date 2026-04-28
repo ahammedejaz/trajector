@@ -22,4 +22,13 @@ describe('Landing', () => {
     render(<Landing onResumeParsed={() => {}} analyzeError={null} />);
     expect(screen.getByText(/Senior Backend Engineer · senior · United States/)).toBeInTheDocument();
   });
+
+  it('renders the new polish sections', () => {
+    render(<Landing onResumeParsed={() => {}} analyzeError={null} />);
+    expect(screen.getByText(/jobs scored per scan/i)).toBeInTheDocument(); // StatsRow
+    expect(screen.getByRole('heading', { name: /how it scores/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /vs the alternatives/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /who.*for/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /local-first by design/i })).toBeInTheDocument();
+  });
 });
