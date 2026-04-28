@@ -12,7 +12,7 @@
   align-items: center;
 }
 
-@media (max-width: 880px) {
+@media (width <= 880px) {
   .inner {
     grid-template-columns: 1fr;
   }
