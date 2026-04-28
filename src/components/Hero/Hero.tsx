@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { DotGrid } from '../DotGrid/DotGrid';
 import styles from './Hero.module.css';
 
 interface Props {
@@ -10,9 +11,16 @@ interface Props {
 export function Hero({ rightSlot, onPrimaryClick, onSecondaryClick }: Props) {
   return (
     <section className={styles.root}>
+      <DotGrid spacing={32} />
+      <span className={`${styles.float} ${styles.floatStrong}`} aria-hidden="true" />
+      <span className={`${styles.float} ${styles.floatDecent}`} aria-hidden="true" />
+      <span className={`${styles.float} ${styles.floatSkip}`} aria-hidden="true" />
       <div className={styles.inner}>
         <div className={styles.left}>
-          <p className={styles.eyebrow}>Open-source, local-first</p>
+          <p className={styles.eyebrow}>
+            <span className={styles.eyebrowDot} />
+            Open-source · Local-first · Free
+          </p>
           <h1 className={styles.headline}>Find the few jobs worth your time.</h1>
           <p className={styles.sub}>
             Drop your resume. We'll synthesize a candidate profile, score live postings against it, and

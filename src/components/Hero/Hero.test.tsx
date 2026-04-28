@@ -6,7 +6,7 @@ import { Hero } from './Hero';
 describe('Hero', () => {
   it('renders eyebrow, headline, and sub', () => {
     render(<Hero rightSlot={<div>preview</div>} onPrimaryClick={() => {}} onSecondaryClick={() => {}} />);
-    expect(screen.getByText(/open-source, local-first/i)).toBeInTheDocument();
+    expect(screen.getByText(/open-source.*local-first/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /find the few jobs/i })).toBeInTheDocument();
     expect(screen.getByText(/your resume and your api key/i)).toBeInTheDocument();
   });
