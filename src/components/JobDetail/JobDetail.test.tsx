@@ -5,7 +5,7 @@ import type { ScoredJob } from '../../types';
 
 const JOB: ScoredJob = {
   id: 'j1',
-  source: 'linkedin',
+  source: 'greenhouse',
   company: 'Acme',
   title: 'Senior Backend Engineer',
   location: 'Remote (US)',
@@ -50,7 +50,7 @@ describe('JobDetail', () => {
 
   it('renders an Apply link with target=_blank', () => {
     render(<JobDetail job={JOB} />);
-    const link = screen.getByRole('link', { name: /apply on linkedin/i });
+    const link = screen.getByRole('link', { name: /apply on greenhouse/i });
     expect(link).toHaveAttribute('href', 'https://example.com/apply');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'));

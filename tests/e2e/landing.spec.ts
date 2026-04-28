@@ -34,7 +34,7 @@ test.describe('landing screen', () => {
     await expect(page.getByRole('heading', { name: /about the company/i })).toBeVisible();
 
     // Apply button — opens applyUrl in new tab
-    const apply = page.getByRole('link', { name: /apply on linkedin/i });
+    const apply = page.getByRole('link', { name: /apply on greenhouse/i });
     await expect(apply).toBeVisible();
     await expect(apply).toHaveAttribute('href', 'https://vercel.com/careers');
     await expect(apply).toHaveAttribute('target', '_blank');

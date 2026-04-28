@@ -121,3 +121,23 @@
   cursor: pointer;
   accent-color: var(--accent);
 }
+
+.sourceBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.sourceCount {
+  font-size: var(--font-size-caption);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sourcePreview {
+  font-size: var(--font-size-caption);
+  color: var(--text-tertiary);
+  margin: 0 0 0 calc(16px + var(--space-2));
+  line-height: 1.4;
+}

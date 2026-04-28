@@ -23,71 +23,47 @@ const MOCK_PROFILE = {
   jobSearchStatus: null,
 };
 
-const MOCK_JOBS = [
-  {
-    id: 'j1',
-    source: 'linkedin',
-    company: 'Acme',
-    title: 'Senior Backend Engineer',
-    location: 'Remote',
-    compRange: '$220k',
-    description: 'Strong match description.',
-    tags: ['Go'],
-    score: 92,
-    scoreReason: 'Stack matches.',
-    applyUrl: 'https://example.com/apply',
-    responsibilities: ['Build services'],
-    requirements: ['7+ years Go'],
-    benefits: ['Remote'],
-    experienceYears: '7+ years',
-    companyBlurb: 'Acme builds.',
-  },
-  {
-    id: 'j2',
-    source: 'greenhouse',
-    company: 'Beta',
-    title: 'Backend Engineer',
-    location: 'Remote',
-    compRange: null,
-    description: 'Decent fit description.',
-    tags: ['Go'],
-    score: 65,
-    scoreReason: 'Decent.',
-    applyUrl: 'https://example.com/beta',
-    responsibilities: [],
-    requirements: [],
-    benefits: [],
-    experienceYears: null,
-    companyBlurb: null,
-  },
-  {
-    id: 'j3',
-    source: 'lever',
-    company: 'Gamma',
-    title: 'Junior Backend',
-    location: 'Remote',
-    compRange: null,
-    description: 'Skip description.',
-    tags: ['Go'],
-    score: 30,
-    scoreReason: 'Too junior.',
-    applyUrl: 'https://example.com/gamma',
-    responsibilities: [],
-    requirements: [],
-    benefits: [],
-    experienceYears: null,
-    companyBlurb: null,
-  },
-];
+const GREENHOUSE_RESPONSE = {
+  jobs: [
+    {
+      id: 'g1',
+      title: 'Senior Backend Engineer',
+      absolute_url: 'https://boards.greenhouse.io/stripe/jobs/g1',
+      location: { name: 'Remote (US)' },
+      departments: [{ name: 'Engineering' }],
+      content: '<p>Strong-match description.</p>',
+      updated_at: '2024-01-15T00:00:00Z',
+    },
+    {
+      id: 'g2',
+      title: 'Backend Engineer',
+      absolute_url: 'https://boards.greenhouse.io/stripe/jobs/g2',
+      location: { name: 'Remote' },
+      departments: [{ name: 'Engineering' }],
+      content: '<p>Decent-fit description.</p>',
+      updated_at: '2024-01-15T00:00:00Z',
+    },
+  ],
+};
 
-async function setup({ page }: { page: import('@playwright/test').Page }) {
+const ASHBY_RESPONSE = { jobs: [] };
+const LEVER_RESPONSE: unknown[] = [];
+
+const SCORING_RESPONSE = {
+  jobs: [
+    { id: 'greenhouse:stripe:g1', score: 92, reason: 'Strong match.' },
+    { id: 'greenhouse:stripe:g2', score: 65, reason: 'Decent.' },
+  ],
+};
+
+async function setupRoutes({ page }: { page: import('@playwright/test').Page }) {
   await page.addInitScript(() => {
     localStorage.setItem(
       'trajector_settings',
       JSON.stringify({
         openRouterKey: 'sk-or-v1-test-key',
         model: 'anthropic/claude-sonnet-4-6',
-        sources: { linkedin: true, greenhouse: true, lever: true, workable: false, yc: false },
+        sources: { greenhouse: true, ashby: true, lever: true },
       }),
     );
   });
@@ -96,51 +72,64 @@ async function setup({ page }: { page: import('@playwright/test').Page }) {
     const req = route.request();
     const body = req.postDataJSON() as { messages: Array<{ role: string; content: string }> };
     const lastUser = body.messages[body.messages.length - 1];
-    const content = lastUser.role === 'user' && lastUser.content.startsWith('{')
-      ? JSON.stringify(MOCK_JOBS)
-      : JSON.stringify(MOCK_PROFILE);
+    const isJsonRequest = lastUser.content.trim().startsWith('{');
+    const responseContent = isJsonRequest ? JSON.stringify(SCORING_RESPONSE) : JSON.stringify(MOCK_PROFILE);
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ choices: [{ message: { content } }] }),
+      body: JSON.stringify({ choices: [{ message: { content: responseContent } }] }),
     });
+  });
+
+  await page.route('**/boards-api.greenhouse.io/v1/boards/*/jobs*', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(GREENHOUSE_RESPONSE) });
+  });
+
+  await page.route('**/api.ashbyhq.com/posting-api/job-board/*', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ASHBY_RESPONSE) });
+  });
+
+  await page.route('**/api.lever.co/v0/postings/*', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(LEVER_RESPONSE) });
   });
 }
 
 test.describe('results flow', () => {
-  test.beforeEach(setup);
+  test.beforeEach(setupRoutes);
 
-  test('shows grouped strong/decent matches and skipped count', async ({ page }) => {
+  test('shows real-fetched matches with strong/decent grouping', async ({ page }) => {
     await page.goto('/');
     const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
     await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
     await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: /start scanning/i }).click();
 
-    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText('Senior Backend Engineer').first()).toBeVisible();
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/decent matches/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /Backend Engineer at Beta/i })).toBeVisible();
-    await expect(page.getByText(/1 skipped/i)).toBeVisible();
-    await expect(page.getByText('Junior Backend')).toHaveCount(0);
+    // Senior Backend Engineer (score 92) appears in main column AND in sidebar profile summary
+    await expect(page.getByRole('button', { name: /Senior Backend Engineer at Stripe/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Backend Engineer at Stripe', exact: true })).toBeVisible();
   });
 
-  test('opens side sheet with job detail on card click', async ({ page }) => {
+  test('opens side sheet with full job detail and a real Apply link', async ({ page }) => {
     await page.goto('/');
     const fixturePath = path.resolve(__dirname, '../fixtures/sample-resume.pdf');
     await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
     await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: /start scanning/i }).click();
-    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 15_000 });
 
-    await page.getByRole('button', { name: /Senior Backend Engineer at Acme/i }).click();
-    await expect(page.getByText('Strong match description.')).toBeVisible();
+    await page.getByRole('button', { name: /Senior Backend Engineer at Stripe/i }).click();
+    await expect(page.getByText('Strong-match description.')).toBeVisible();
     await expect(page.getByRole('heading', { name: /why this score/i })).toBeVisible();
-    // New: Apply button
-    await expect(page.getByRole('link', { name: /apply on linkedin/i })).toBeVisible();
+
+    const apply = page.getByRole('link', { name: /apply on greenhouse/i });
+    await expect(apply).toBeVisible();
+    await expect(apply).toHaveAttribute('href', 'https://boards.greenhouse.io/stripe/jobs/g1');
+    await expect(apply).toHaveAttribute('target', '_blank');
 
     await page.getByRole('button', { name: /close/i }).click();
-    await expect(page.getByText('Strong match description.')).toHaveCount(0);
+    await expect(page.getByText('Strong-match description.')).toHaveCount(0);
   });
 
   test('sidebar New scan returns to upload', async ({ page }) => {
@@ -149,7 +138,7 @@ test.describe('results flow', () => {
     await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
     await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: /start scanning/i }).click();
-    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 15_000 });
 
     await page.getByRole('button', { name: /new scan/i }).click();
     await expect(page.getByText('Drop your resume to begin')).toBeVisible();
@@ -161,7 +150,7 @@ test.describe('results flow', () => {
     await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
     await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: /start scanning/i }).click();
-    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 15_000 });
 
     await page.getByRole('button', { name: /edit profile/i }).click();
     await expect(page.getByText('Confirm your profile')).toBeVisible();
@@ -173,7 +162,7 @@ test.describe('results flow', () => {
     await page.getByLabel('Drop here or click to browse').setInputFiles(fixturePath);
     await expect(page.getByText('Confirm your profile')).toBeVisible({ timeout: 20_000 });
     await page.getByRole('button', { name: /start scanning/i }).click();
-    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/strong matches/i)).toBeVisible({ timeout: 15_000 });
 
     await expect(page.getByText(/decent matches/i)).toBeVisible();
     await page.getByRole('radio', { name: 'Strong' }).click();

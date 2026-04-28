@@ -4,11 +4,9 @@ import { scoreTier } from '../../lib/scoreTier';
 import styles from './JobDetail.module.css';
 
 const SOURCE_NAMES: Record<SourceKey, string> = {
-  linkedin: 'LinkedIn',
   greenhouse: 'Greenhouse',
+  ashby: 'Ashby',
   lever: 'Lever',
-  workable: 'Workable',
-  yc: 'Y Combinator',
 };
 
 interface Props {

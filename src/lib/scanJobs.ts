@@ -1,116 +1,68 @@
 import { fetchCompletion } from './openrouter';
 import type { Profile, ScoredJob, SourceKey } from '../types';
+import { fetchAllJobs } from './ats/fetchAll';
+import { filterJobsByProfile } from './ats/filterJobs';
+import { COMPANIES } from './companies';
+import type { RawJob } from './ats/types';
+
+const TOP_N = 30;
+const MAX_DESC_CHARS = 2000;
 
 const SOURCE_LABELS: Record<SourceKey, string> = {
-  linkedin: 'LinkedIn',
   greenhouse: 'Greenhouse',
+  ashby: 'Ashby',
   lever: 'Lever',
-  workable: 'Workable',
-  yc: 'Y Combinator',
 };
 
-function buildSystemPrompt(enabledSources: SourceKey[]): string {
-  const sourceList = enabledSources.map((s) => `"${s}"`).join(', ');
-  return `You are a job-search assistant. Generate exactly 15 realistic job postings tuned to the candidate's profile. Return ONLY a JSON array — no markdown fences, no commentary.
+export { SOURCE_LABELS };
 
-Each item:
-{
-  "id": string (unique short slug),
-  "source": one of [${sourceList}],
-  "company": string,
-  "title": string,
-  "location": string (e.g. "Remote (US)", "San Francisco, CA"),
-  "compRange": string | null (e.g. "$200k-$240k base + 0.05% equity" or null),
-  "description": string (4-6 sentences, plausible posting prose, sets up the role),
-  "tags": string[] (3-5 tech / domain tags),
-  "score": number 0-100 (how well this matches the candidate),
-  "scoreReason": string (one sentence justifying the score),
-  "applyUrl": string (a plausible apply-page URL — see source patterns below),
-  "responsibilities": string[] (4-6 bullet points, each one short sentence describing day-to-day work),
-  "requirements": string[] (4-6 bullet points, each one short sentence describing must-haves),
-  "benefits": string[] (3-5 bullet points like "401k match", "Unlimited PTO", "Remote stipend"),
-  "experienceYears": string | null (e.g. "5+ years", "Senior level", or null),
-  "companyBlurb": string | null (1-2 sentences about the company — what they do, stage, vibe)
+interface LlmScore {
+  id: string;
+  score: number;
+  reason: string;
 }
 
-URL patterns by source:
-- linkedin: https://www.linkedin.com/jobs/view/{slug}-{id}
-- greenhouse: https://boards.greenhouse.io/{company-slug}/jobs/{id}
-- lever: https://jobs.lever.co/{company-slug}/{id}
-- workable: https://apply.workable.com/{company-slug}/j/{id}
-- yc: https://www.workatastartup.com/jobs/{id}
-
-Rules:
-- Distribute postings across the enabled sources (don't put them all on one)
-- Mix tiers: ~4 strong (>=80), ~6 decent (50-79), ~5 skip (<50). Skips help calibrate.
-- COUNTRY: only generate jobs available in the candidate's "country" or fully remote / global. If no country given, default to US-friendly remote.
-- SPONSORSHIP: if requiresSponsorship is true, include only jobs that accept sponsorship; if false, generate a normal mix.
-- COMP: postings below compFloor score lower
-- DEAL-BREAKERS: postings violating dealBreakers score lower
-- COMPANY STAGE / SIZE: if specified, score off-stage / off-size postings lower
-- EQUITY: if equityImportance is "dealbreaker", postings without equity score very low; if "irrelevant", treat equity as neutral
-- INDUSTRIES TO EXCLUDE: avoid generating postings in those industries
-- EMPLOYMENT TYPES: contract roles for full-time-only candidates score lower, and vice versa
-- Vary companies; no duplicates
-- Make responsibilities, requirements, benefits CONCRETE and specific to the role — not generic placeholders`;
+interface LlmResponse {
+  jobs?: LlmScore[];
 }
 
-function fallbackApplyUrl(source: SourceKey, company: string, id: string): string {
-  const slug = company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  switch (source) {
-    case 'linkedin':
-      return `https://www.linkedin.com/jobs/view/${slug}-${id}`;
-    case 'greenhouse':
-      return `https://boards.greenhouse.io/${slug}/jobs/${id}`;
-    case 'lever':
-      return `https://jobs.lever.co/${slug}/${id}`;
-    case 'workable':
-      return `https://apply.workable.com/${slug}/j/${id}`;
-    case 'yc':
-      return `https://www.workatastartup.com/jobs/${id}`;
-  }
+function buildScoringPrompt(): string {
+  return `You are a job-search assistant. The user's profile is provided as JSON. Below it is a JSON array of REAL job postings fetched from public APIs. Score each job 0-100 for how well it matches the user.
+
+Return ONLY a JSON object: { "jobs": [ { "id": <job.id>, "score": 0-100, "reason": <one sentence> }, ... ] }
+- "id" must be the EXACT id from the input job. Do NOT invent ids.
+- "score" is 0-100; use the full range. ~4 strong (>=80), ~12 decent (50-79), the rest can be skip (<50).
+- "reason" is one short sentence justifying the score.
+
+Scoring factors (in order of weight):
+1. Stack alignment — does the job mention the candidate's stackSignals?
+2. Seniority alignment — title vs candidate.level
+3. Country / location match — job location vs profile.country and profile.locationPreference
+4. Sponsorship — if requiresSponsorship is true and the job description excludes sponsorship, score lower
+5. Comp — if compFloor is set and comp range is below it (when stated), score lower
+6. Company stages / size / equity / industries — soft modifiers
+7. Deal-breakers — if any dealBreaker keyword appears in description, score lower
+
+Be honest. Postings that look great should score high; obvious mismatches low. The user trusts that low scores are skipped, so don't inflate.`;
 }
 
-function coerceJob(raw: unknown, enabledSources: SourceKey[]): ScoredJob | null {
-  if (typeof raw !== 'object' || raw === null) return null;
-  const r = raw as Record<string, unknown>;
-  if (typeof r.id !== 'string' || typeof r.title !== 'string' || typeof r.company !== 'string' || typeof r.description !== 'string') {
-    return null;
-  }
-  const sourceCandidate = typeof r.source === 'string' ? r.source : '';
-  const source: SourceKey = enabledSources.includes(sourceCandidate as SourceKey)
-    ? (sourceCandidate as SourceKey)
-    : enabledSources[0];
-  const rawScore = typeof r.score === 'number' ? r.score : 0;
-  const score = Math.max(0, Math.min(100, Math.round(rawScore)));
-  const id = r.id;
-  const company = r.company;
+function summarizeJob(j: RawJob): unknown {
+  const desc = j.description.length > MAX_DESC_CHARS
+    ? j.description.slice(0, MAX_DESC_CHARS) + '…'
+    : j.description;
   return {
-    id,
-    source,
-    company,
-    title: r.title,
-    location: typeof r.location === 'string' ? r.location : 'Remote',
-    compRange: typeof r.compRange === 'string' ? r.compRange : null,
-    description: r.description,
-    tags: Array.isArray(r.tags) ? r.tags.filter((t): t is string => typeof t === 'string').slice(0, 5) : [],
-    score,
-    scoreReason: typeof r.scoreReason === 'string' ? r.scoreReason : '',
-    applyUrl: typeof r.applyUrl === 'string' && r.applyUrl.length > 0
-      ? r.applyUrl
-      : fallbackApplyUrl(source, company, id),
-    responsibilities: Array.isArray(r.responsibilities)
-      ? r.responsibilities.filter((s): s is string => typeof s === 'string').slice(0, 6)
-      : [],
-    requirements: Array.isArray(r.requirements)
-      ? r.requirements.filter((s): s is string => typeof s === 'string').slice(0, 6)
-      : [],
-    benefits: Array.isArray(r.benefits)
-      ? r.benefits.filter((s): s is string => typeof s === 'string').slice(0, 5)
-      : [],
-    experienceYears: typeof r.experienceYears === 'string' && r.experienceYears.length > 0 ? r.experienceYears : null,
-    companyBlurb: typeof r.companyBlurb === 'string' && r.companyBlurb.length > 0 ? r.companyBlurb : null,
+    id: j.id,
+    company: j.company,
+    title: j.title,
+    location: j.location,
+    department: j.department,
+    description: desc,
   };
+}
+
+function clampScore(raw: unknown): number {
+  const n = typeof raw === 'number' ? raw : 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
 }
 
 export async function scanJobs(
@@ -120,32 +72,69 @@ export async function scanJobs(
   model: string,
 ): Promise<ScoredJob[]> {
   if (enabledSources.length === 0) return [];
-  const system = buildSystemPrompt(enabledSources);
-  const user = JSON.stringify(profile, null, 2);
+  const enabledSet = new Set<SourceKey>(enabledSources);
+  const enabledCompanies = COMPANIES.filter((c) => enabledSet.has(c.ats));
+  if (enabledCompanies.length === 0) return [];
+
+  const fetched = await fetchAllJobs(enabledCompanies);
+  const filtered = filterJobsByProfile(fetched.jobs, profile, TOP_N);
+  if (filtered.length === 0) return [];
+
+  const system = buildScoringPrompt();
+  const user = JSON.stringify(
+    {
+      profile,
+      jobs: filtered.map(summarizeJob),
+    },
+    null,
+    2,
+  );
 
   const raw = await fetchCompletion(apiKey, model, [
     { role: 'system', content: system },
     { role: 'user', content: user },
   ]);
 
-  let parsed: unknown;
+  let parsed: LlmResponse;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(raw) as LlmResponse;
   } catch {
     throw new Error('Model returned invalid JSON');
   }
-  if (!Array.isArray(parsed)) throw new Error('Expected an array of jobs');
 
-  const seen = new Set<string>();
-  const jobs: ScoredJob[] = [];
-  for (const item of parsed) {
-    const job = coerceJob(item, enabledSources);
-    if (!job) continue;
-    if (seen.has(job.id)) continue;
-    seen.add(job.id);
-    jobs.push(job);
+  const scoresById = new Map<string, LlmScore>();
+  if (Array.isArray(parsed.jobs)) {
+    for (const s of parsed.jobs) {
+      if (s && typeof s.id === 'string') {
+        scoresById.set(s.id, s);
+      }
+    }
   }
-  return jobs;
-}
 
-export { SOURCE_LABELS };
+  const scored: ScoredJob[] = [];
+  for (const j of filtered) {
+    const s = scoresById.get(j.id);
+    if (!s) continue;
+    scored.push({
+      id: j.id,
+      source: j.source,
+      company: j.company,
+      title: j.title,
+      location: j.location,
+      compRange: null,
+      description: j.description,
+      tags: j.department ? [j.department] : [],
+      score: clampScore(s.score),
+      scoreReason: typeof s.reason === 'string' ? s.reason : '',
+      applyUrl: j.applyUrl,
+      responsibilities: [],
+      requirements: [],
+      benefits: [],
+      experienceYears: null,
+      companyBlurb: null,
+    });
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored;
+}

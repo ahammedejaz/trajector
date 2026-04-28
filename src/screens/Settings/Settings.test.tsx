@@ -46,14 +46,25 @@ describe('Settings screen', () => {
 
   it('renders source toggle checkboxes', () => {
     render(<Settings onDone={() => {}} />);
-    expect(screen.getByRole('checkbox', { name: /linkedin/i })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: /greenhouse/i })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /ashby/i })).toBeInTheDocument();
   });
 
   it('toggles a source off and persists it', async () => {
     render(<Settings onDone={() => {}} />);
-    await userEvent.click(screen.getByRole('checkbox', { name: /linkedin/i }));
+    await userEvent.click(screen.getByRole('checkbox', { name: /greenhouse/i }));
     const stored = JSON.parse(localStorage.getItem('trajector_settings') ?? '{}') as { sources: Record<string, boolean> };
-    expect(stored.sources.linkedin).toBe(false);
+    expect(stored.sources.greenhouse).toBe(false);
+  });
+
+  it('shows the company count and preview names for each source', () => {
+    render(<Settings onDone={() => {}} />);
+    // The numbers come from companies.ts — Greenhouse has 13, Ashby 12, Lever 3.
+    expect(screen.getByText('(13)')).toBeInTheDocument();
+    expect(screen.getByText('(12)')).toBeInTheDocument();
+    expect(screen.getByText('(3)')).toBeInTheDocument();
+    // Preview should include first 3 company names from each ATS
+    expect(screen.getByText(/Stripe/)).toBeInTheDocument();
+    expect(screen.getByText(/Spotify/)).toBeInTheDocument();
   });
 });
