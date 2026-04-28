@@ -30,8 +30,14 @@ Each item:
 Rules:
 - Distribute postings across the enabled sources (don't put them all on one)
 - Mix tiers: ~4 strong (>=80), ~6 decent (50-79), ~5 skip (<50). Skips help calibrate.
-- Honor compFloor: postings below it score lower
-- Honor dealBreakers: postings violating them score lower
+- COUNTRY: only generate jobs available in the candidate's "country" or fully remote / global. If no country given, default to US-friendly remote.
+- SPONSORSHIP: if requiresSponsorship is true, include only jobs that accept sponsorship; if false, generate a normal mix.
+- COMP: postings below compFloor score lower
+- DEAL-BREAKERS: postings violating dealBreakers score lower
+- COMPANY STAGE / SIZE: if specified, score off-stage / off-size postings lower
+- EQUITY: if equityImportance is "dealbreaker", postings without equity score very low; if "irrelevant", treat equity as neutral
+- INDUSTRIES TO EXCLUDE: avoid generating postings in those industries
+- EMPLOYMENT TYPES: contract roles for full-time-only candidates score lower, and vice versa
 - Vary companies; no duplicates`;
 }
 
