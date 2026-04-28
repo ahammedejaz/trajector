@@ -1,0 +1,14 @@
+.root {
+  background: var(--bg-surface);
+  border-top: var(--border-width) solid var(--border-subtle);
+  border-bottom: var(--border-width) solid var(--border-subtle);
+  padding: var(--space-3) var(--space-5);
+}
+
+.text {
+  max-width: 1120px;
+  margin: 0 auto;
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  text-align: center;
+}

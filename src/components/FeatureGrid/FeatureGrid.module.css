@@ -1,0 +1,52 @@
+.root {
+  padding: var(--space-7) var(--space-5);
+}
+
+.inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+@media (max-width: 880px) {
+  .inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  position: relative;
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  overflow: hidden;
+}
+
+.accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.strong { background: var(--score-strong); }
+.decent { background: var(--score-decent); }
+.skip { background: var(--score-skip); }
+
+.title {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+
+.body {
+  font-size: var(--font-size-body);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
