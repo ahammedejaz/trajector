@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Local data — user-private
+data/jds/
+data/evaluations/
+data/outcomes.jsonl
+data/connections.csv
+data/intro-graph.json
+data/salary-cache/
+data/pipeline.json
+output/pdfs/
+output/messages/
+
+# CV files (private)
+cv.md
+cv.pdf
+cv.docx
+
+# Config (contains keys)
+config/profile.yml
+config/secrets.yml
+.env
+.env.local
+
+# Reports
+reports/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test
+coverage/
+.nyc_output/

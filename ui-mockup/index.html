@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trajector — Your career, on a smarter trajectory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          canvas: '#0a0a0f',
+          surface: '#13131a',
+          'surface-2': '#1c1c26',
+          'surface-3': '#262631',
+          'border-subtle': '#26262e',
+          'border-strong': '#3a3a45',
+          'text-primary': '#f4f4f5',
+          'text-secondary': '#a1a1aa',
+          'text-tertiary': '#71717a',
+          violet: '#8b5cf6',
+          indigo: '#6366f1',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* gradient border utility */
+  .grad-border {
+    position: relative;
+    background:
+      linear-gradient(#13131a, #13131a) padding-box,
+      linear-gradient(135deg, rgba(139,92,246,0.6), rgba(99,102,241,0.3)) border-box;
+    border: 1px solid transparent;
+  }
+
+  /* score chip dot fill */
+  .dot { width: 6px; height: 6px; border-radius: 9999px; display: inline-block; }
+
+  /* radial gauge — 12 spokes */
+  .gauge-wrap { position: relative; width: 140px; height: 140px; }
+  .gauge-spoke {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 60px;
+    transform-origin: 50% 100%;
+    border-radius: 2px;
+  }
+
+  /* subtle scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3a45; }
+
+  /* shimmer */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.18) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.4s ease-in-out infinite;
+  }
+
+  /* card hover */
+  .job-card { transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease; }
+  .job-card:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); border-color: #3a3a45; }
+
+  /* light theme */
+  html:not(.dark) body { background: #fafafa; color: #09090b; }
+  html:not(.dark) .surface { background: #ffffff !important; }
+  html:not(.dark) .surface-2 { background: #f4f4f5 !important; }
+  html:not(.dark) .border-subtle { border-color: #e4e4e7 !important; }
+  html:not(.dark) .text-primary { color: #09090b !important; }
+  html:not(.dark) .text-secondary { color: #52525b !important; }
+  html:not(.dark) .text-tertiary { color: #71717a !important; }
+  html:not(.dark) .canvas { background: #fafafa !important; }
+  html:not(.dark) .grad-border {
+    background:
+      linear-gradient(#ffffff, #ffffff) padding-box,
+      linear-gradient(135deg, rgba(139,92,246,0.6), rgba(99,102,241,0.3)) border-box;
+  }
+</style>
+</head>
+<body class="bg-canvas canvas text-text-primary text-primary antialiased min-h-screen">
+
+<!-- ───────────────────── App shell ───────────────────── -->
+<div class="flex min-h-screen">
+
+  <!-- ─────────── Sidebar ─────────── -->
+  <aside class="w-60 shrink-0 border-r border-border-subtle border-subtle bg-surface surface flex flex-col">
+    <!-- logo -->
+    <div class="h-14 px-5 flex items-center gap-2 border-b border-border-subtle border-subtle">
+      <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet to-indigo flex items-center justify-center">
+        <svg viewBox="0 0 24 24" class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21l4.5-4.5M21 3l-9 9M21 3v6M21 3h-6"/>
+        </svg>
+      </div>
+      <span class="font-semibold text-[15px] tracking-tight">Trajector</span>
+      <span class="ml-auto mono text-[10px] text-text-tertiary text-tertiary px-1.5 py-0.5 rounded bg-surface-2 surface-2">v0.1</span>
+    </div>
+
+    <!-- nav -->
+    <nav class="px-3 py-4 flex-1 space-y-0.5 text-[13.5px]">
+      <a class="flex items-center gap-2.5 px-3 py-2 rounded-md bg-surface-2 surface-2 text-text-primary text-primary font-medium" href="#">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Dashboard
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-2 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary" href="#">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        Pipeline
+        <span class="ml-auto mono text-[10px] bg-surface-3 surface-2 text-text-secondary text-secondary px-1.5 py-0.5 rounded">7</span>
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-2 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary" href="#">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Companies
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-2 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary" href="#">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11H5a2 2 0 0 0-2 2v7h18v-7a2 2 0 0 0-2-2h-4"/><circle cx="12" cy="7" r="4"/></svg>
+        Interviews
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-2 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary" href="#">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Compensation
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-2 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary" href="#">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        Warm Intros
+        <span class="ml-auto mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">12</span>
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-2 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary" href="#">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Calibration
+      </a>
+
+      <div class="pt-5 px-3 text-[10px] uppercase tracking-wider text-text-tertiary text-tertiary font-semibold">Recent</div>
+      <a class="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-text-secondary text-secondary text-[13px] hover:bg-surface-2 hover:text-text-primary" href="#">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Anthropic — Sr ML Eng
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-text-secondary text-secondary text-[13px] hover:bg-surface-2 hover:text-text-primary" href="#">
+        <span class="w-1.5 h-1.5 rounded-full bg-lime-500"></span> Stripe — Staff Eng, ML
+      </a>
+      <a class="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-text-secondary text-secondary text-[13px] hover:bg-surface-2 hover:text-text-primary" href="#">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Retool — Lead Eng
+      </a>
+    </nav>
+
+    <!-- profile pad -->
+    <div class="px-3 py-3 border-t border-border-subtle border-subtle">
+      <div class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-surface-2 cursor-pointer">
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[11px] font-semibold text-white">SE</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[13px] font-medium truncate">Syed Ejaz</div>
+          <div class="text-[11px] text-text-tertiary text-tertiary truncate">Calibration: 92%</div>
+        </div>
+        <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─────────── Main column ─────────── -->
+  <main class="flex-1 min-w-0">
+
+    <!-- Top bar -->
+    <header class="h-14 border-b border-border-subtle border-subtle flex items-center px-6 gap-4 bg-canvas/80 backdrop-blur sticky top-0 z-20">
+      <h1 class="text-[15px] font-semibold tracking-tight">Dashboard</h1>
+      <span class="text-text-tertiary text-tertiary text-[13px]">Tuesday, April 28</span>
+
+      <!-- command palette -->
+      <button class="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-md bg-surface-2 surface-2 hover:bg-surface-3 border border-border-subtle border-subtle text-[13px] text-text-secondary text-secondary min-w-[260px]">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Search jobs, companies, modes...</span>
+        <span class="ml-auto mono text-[11px] bg-surface-3 surface-2 px-1.5 py-0.5 rounded border border-border-subtle border-subtle">⌘K</span>
+      </button>
+
+      <!-- theme toggle -->
+      <button id="themeToggle" class="w-9 h-9 rounded-md bg-surface-2 surface-2 hover:bg-surface-3 flex items-center justify-center text-text-secondary text-secondary hover:text-text-primary" title="Toggle theme">
+        <svg class="w-4 h-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="w-4 h-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </header>
+
+    <!-- Page content -->
+    <div class="px-6 py-6 max-w-[1280px] mx-auto space-y-6">
+
+      <!-- ───── Calibration banner ───── -->
+      <div class="grad-border rounded-xl p-5 flex items-start gap-4">
+        <div class="w-10 h-10 rounded-lg bg-violet/15 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-violet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="font-semibold text-[15px]">Ready to recalibrate</h3>
+            <span class="mono text-[10px] bg-violet/15 text-violet px-1.5 py-0.5 rounded">NEW</span>
+          </div>
+          <p class="text-[13.5px] text-text-secondary text-secondary leading-relaxed">
+            We have <span class="text-text-primary text-primary font-medium">34 outcomes</span> to learn from since your last fit.
+            Re-fitting your scoring weights will take ~10s. You'll see exactly which dimensions changed and why before anything is saved.
+          </p>
+          <div class="mt-3 flex items-center gap-2">
+            <button class="px-3.5 py-1.5 rounded-md bg-gradient-to-r from-violet to-indigo text-white text-[13px] font-medium hover:opacity-90">Recalibrate now</button>
+            <button class="px-3.5 py-1.5 rounded-md bg-surface-2 surface-2 hover:bg-surface-3 text-[13px] text-text-secondary text-secondary border border-border-subtle border-subtle">Show diff first</button>
+            <button class="px-3.5 py-1.5 rounded-md text-[13px] text-text-tertiary text-tertiary hover:text-text-primary">Snooze 7d</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───── Stats row ───── -->
+      <section class="grid grid-cols-4 gap-4">
+        <!-- card 1 -->
+        <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-4">
+          <div class="flex items-center gap-2 text-text-tertiary text-tertiary text-[12px] uppercase tracking-wide font-medium">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Scanned today
+          </div>
+          <div class="mt-2 mono text-3xl font-semibold tracking-tight">287</div>
+          <div class="text-[12px] text-text-secondary text-secondary mt-1">across 47 portals · <span class="text-emerald-400">+18%</span> vs avg</div>
+        </div>
+        <!-- card 2 -->
+        <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-4">
+          <div class="flex items-center gap-2 text-text-tertiary text-tertiary text-[12px] uppercase tracking-wide font-medium">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            High-fit shortlist
+          </div>
+          <div class="mt-2 mono text-3xl font-semibold tracking-tight text-emerald-400">18</div>
+          <div class="text-[12px] text-text-secondary text-secondary mt-1">scoring ≥ 4.0/5 · 6 new today</div>
+        </div>
+        <!-- card 3 -->
+        <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-4">
+          <div class="flex items-center gap-2 text-text-tertiary text-tertiary text-[12px] uppercase tracking-wide font-medium">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Active applications
+          </div>
+          <div class="mt-2 mono text-3xl font-semibold tracking-tight">7</div>
+          <div class="text-[12px] text-text-secondary text-secondary mt-1">3 in interview · 2 awaiting reply</div>
+        </div>
+        <!-- card 4 -->
+        <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-4">
+          <div class="flex items-center gap-2 text-text-tertiary text-tertiary text-[12px] uppercase tracking-wide font-medium">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Calibration confidence
+          </div>
+          <div class="mt-2 flex items-baseline gap-1.5">
+            <span class="mono text-3xl font-semibold tracking-tight text-violet">92%</span>
+            <span class="mono text-[11px] text-text-tertiary text-tertiary">R² 0.71</span>
+          </div>
+          <div class="text-[12px] text-text-secondary text-secondary mt-1">last fit: 14 days ago</div>
+        </div>
+      </section>
+
+      <!-- ───── Top matches ───── -->
+      <section>
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[18px] font-semibold tracking-tight">Top matches today</h2>
+            <p class="text-[13px] text-text-secondary text-secondary">Filtered to roles scoring ≥ 4.0/5 · ranked by fit + warm-intro signal</p>
+          </div>
+          <div class="flex items-center gap-1.5 text-[12.5px]">
+            <button class="px-2.5 py-1.5 rounded-md bg-surface-2 surface-2 border border-border-subtle border-subtle text-text-primary text-primary">All</button>
+            <button class="px-2.5 py-1.5 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary">Remote</button>
+            <button class="px-2.5 py-1.5 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary">$300k+</button>
+            <button class="px-2.5 py-1.5 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary">Has warm intro</button>
+            <button class="px-2.5 py-1.5 rounded-md text-text-secondary text-secondary hover:bg-surface-2 hover:text-text-primary">+ filter</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+
+          <!-- ── Job card 1 (hero, 4.7) ── -->
+          <article class="job-card bg-surface surface border border-border-subtle border-subtle rounded-xl p-5">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center text-white font-bold text-[15px]">A</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-[15.5px] tracking-tight truncate">Senior ML Engineer</h3>
+                <div class="text-[13px] text-text-secondary text-secondary mt-0.5">
+                  Anthropic <span class="text-text-tertiary text-tertiary mx-1.5">·</span> Remote (US) <span class="text-text-tertiary text-tertiary mx-1.5">·</span> <span class="mono">$280k–$405k</span>
+                </div>
+              </div>
+              <div class="text-[11px] text-text-tertiary text-tertiary mono">2h ago</div>
+            </div>
+
+            <div class="mt-4 flex items-center gap-3">
+              <!-- score chip -->
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                <span class="mono text-emerald-400 font-semibold text-[15px]">4.7</span>
+                <div class="flex gap-0.5">
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-500/30"></span>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-[11.5px]">
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">stack</span>
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">level</span>
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">trajectory</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2 text-[12.5px] text-text-secondary text-secondary">
+              <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span><span class="text-text-primary text-primary font-medium">3 connections</span> at Anthropic · 1 ex-employee</span>
+            </div>
+
+            <div class="mt-4 flex items-center gap-2">
+              <button class="px-3 py-1.5 rounded-md bg-violet hover:bg-violet/90 text-white text-[13px] font-medium">View evaluation</button>
+              <button class="px-3 py-1.5 rounded-md bg-surface-2 surface-2 hover:bg-surface-3 text-[13px] text-text-primary text-primary border border-border-subtle border-subtle">Generate CV</button>
+              <button class="ml-auto p-1.5 rounded-md text-text-tertiary text-tertiary hover:bg-surface-2 hover:text-text-primary" title="Save">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </button>
+            </div>
+          </article>
+
+          <!-- ── Job card 2 (4.5) ── -->
+          <article class="job-card bg-surface surface border border-border-subtle border-subtle rounded-xl p-5">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center text-white font-bold text-[15px]">S</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-[15.5px] tracking-tight truncate">Staff Engineer, ML Platform</h3>
+                <div class="text-[13px] text-text-secondary text-secondary mt-0.5">
+                  Stripe <span class="text-text-tertiary text-tertiary mx-1.5">·</span> SF / Remote <span class="text-text-tertiary text-tertiary mx-1.5">·</span> <span class="mono">$310k–$430k</span>
+                </div>
+              </div>
+              <div class="text-[11px] text-text-tertiary text-tertiary mono">5h ago</div>
+            </div>
+
+            <div class="mt-4 flex items-center gap-3">
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                <span class="mono text-emerald-400 font-semibold text-[15px]">4.5</span>
+                <div class="flex gap-0.5">
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-400"></span>
+                  <span class="dot bg-emerald-500/40"></span>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-[11.5px]">
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">comp</span>
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">brand</span>
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">stack</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2 text-[12.5px] text-text-secondary text-secondary">
+              <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <span><span class="text-text-primary text-primary font-medium">5 connections</span> at Stripe · likely HM: D. Park</span>
+            </div>
+
+            <div class="mt-4 flex items-center gap-2">
+              <button class="px-3 py-1.5 rounded-md bg-violet hover:bg-violet/90 text-white text-[13px] font-medium">View evaluation</button>
+              <button class="px-3 py-1.5 rounded-md bg-surface-2 surface-2 hover:bg-surface-3 text-[13px] text-text-primary text-primary border border-border-subtle border-subtle">Generate CV</button>
+              <button class="ml-auto p-1.5 rounded-md text-text-tertiary text-tertiary hover:bg-surface-2 hover:text-text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
+            </div>
+          </article>
+
+          <!-- ── Job card 3 (4.2) ── -->
+          <article class="job-card bg-surface surface border border-border-subtle border-subtle rounded-xl p-5">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-[15px]">L</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-[15.5px] tracking-tight truncate">Head of Applied AI</h3>
+                <div class="text-[13px] text-text-secondary text-secondary mt-0.5">
+                  Linear <span class="text-text-tertiary text-tertiary mx-1.5">·</span> Remote (EU/US) <span class="text-text-tertiary text-tertiary mx-1.5">·</span> <span class="mono">$260k–$340k + 0.4%</span>
+                </div>
+              </div>
+              <div class="text-[11px] text-text-tertiary text-tertiary mono">1d ago</div>
+            </div>
+
+            <div class="mt-4 flex items-center gap-3">
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-lime-500/10 border border-lime-500/30">
+                <span class="mono text-lime-400 font-semibold text-[15px]">4.2</span>
+                <div class="flex gap-0.5">
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-500/30"></span>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-[11.5px]">
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">trajectory</span>
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">growth</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2 text-[12.5px]">
+              <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span class="text-text-secondary text-secondary">Risk: <span class="text-amber-400">comp below 25th pct</span> — negotiation needed</span>
+            </div>
+
+            <div class="mt-4 flex items-center gap-2">
+              <button class="px-3 py-1.5 rounded-md bg-violet hover:bg-violet/90 text-white text-[13px] font-medium">View evaluation</button>
+              <button class="px-3 py-1.5 rounded-md bg-surface-2 surface-2 hover:bg-surface-3 text-[13px] text-text-primary text-primary border border-border-subtle border-subtle">Generate CV</button>
+              <button class="ml-auto p-1.5 rounded-md text-text-tertiary text-tertiary hover:bg-surface-2 hover:text-text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
+            </div>
+          </article>
+
+          <!-- ── Job card 4 (4.0) ── -->
+          <article class="job-card bg-surface surface border border-border-subtle border-subtle rounded-xl p-5">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-[15px]">R</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-[15.5px] tracking-tight truncate">Lead Engineer, AI Tooling</h3>
+                <div class="text-[13px] text-text-secondary text-secondary mt-0.5">
+                  Retool <span class="text-text-tertiary text-tertiary mx-1.5">·</span> SF (hybrid) <span class="text-text-tertiary text-tertiary mx-1.5">·</span> <span class="mono">$240k–$330k</span>
+                </div>
+              </div>
+              <div class="text-[11px] text-text-tertiary text-tertiary mono">2d ago</div>
+            </div>
+
+            <div class="mt-4 flex items-center gap-3">
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-lime-500/10 border border-lime-500/30">
+                <span class="mono text-lime-400 font-semibold text-[15px]">4.0</span>
+                <div class="flex gap-0.5">
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-400"></span>
+                  <span class="dot bg-lime-500/30"></span>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-[11.5px]">
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">stack</span>
+                <span class="px-2 py-0.5 rounded bg-surface-2 surface-2 text-text-secondary text-secondary">scope</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2 text-[12.5px]">
+              <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+              <span class="text-text-secondary text-secondary">Risk: <span class="text-amber-400">SF hybrid 3d/wk</span> — relocation cost</span>
+            </div>
+
+            <div class="mt-4 flex items-center gap-2">
+              <button class="px-3 py-1.5 rounded-md bg-violet hover:bg-violet/90 text-white text-[13px] font-medium">View evaluation</button>
+              <button class="px-3 py-1.5 rounded-md bg-surface-2 surface-2 hover:bg-surface-3 text-[13px] text-text-primary text-primary border border-border-subtle border-subtle">Generate CV</button>
+              <button class="ml-auto p-1.5 rounded-md text-text-tertiary text-tertiary hover:bg-surface-2 hover:text-text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ───── Detail panel (gauge + dimensions for top match) ───── -->
+      <section class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-6">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-text-tertiary text-tertiary font-semibold mb-1">Featured evaluation</div>
+            <h2 class="text-[18px] font-semibold tracking-tight">Anthropic — Senior ML Engineer</h2>
+          </div>
+          <button class="text-[12.5px] text-text-secondary text-secondary hover:text-text-primary flex items-center gap-1">
+            View full report
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-[auto_1fr] gap-8 items-center">
+          <!-- gauge -->
+          <div class="gauge-wrap">
+            <!-- 12 spokes generated -->
+            <div id="gauge"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="text-center">
+                <div class="mono text-3xl font-bold text-emerald-400 leading-none">4.7</div>
+                <div class="text-[10px] text-text-tertiary text-tertiary uppercase tracking-wider mt-1">weighted</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- dimensions -->
+          <div class="grid grid-cols-2 gap-x-6 gap-y-2.5 text-[13px]">
+            <!-- row -->
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Role fit</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 96%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.8</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Level fit</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 92%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.6</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Comp fit</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 94%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.7</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Stack fit</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 98%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.9</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Trajectory</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 100%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">5.0</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Culture</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 90%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.5</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Growth</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 96%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.8</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Learning</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-lime-400 rounded-full" style="width: 84%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.2</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Location</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 100%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">5.0</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Red flags</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 96%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.8</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Exit options</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-emerald-400 rounded-full" style="width: 94%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.7</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-24 text-text-tertiary text-tertiary text-[12px]">Personal</span>
+              <div class="flex-1 h-1.5 rounded-full bg-surface-3 surface-2 overflow-hidden">
+                <div class="h-full bg-lime-400 rounded-full" style="width: 86%"></div>
+              </div>
+              <span class="mono text-[12px] w-7 text-right">4.3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- warm intros card embedded -->
+        <div class="mt-6 grid grid-cols-2 gap-4">
+          <div class="bg-surface-2 surface-2 rounded-lg p-4 border border-border-subtle border-subtle">
+            <div class="flex items-center gap-2 mb-3">
+              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <span class="font-semibold text-[13.5px]">Warm intros</span>
+              <span class="ml-auto mono text-[10px] text-text-tertiary text-tertiary">3 found</span>
+            </div>
+            <div class="space-y-2.5">
+              <div class="flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-[10px] font-semibold text-white shrink-0">JD</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-[12.5px] font-medium">Jane Doe</div>
+                  <div class="text-[11.5px] text-text-tertiary text-tertiary">Eng Manager, ML · since Aug '24</div>
+                </div>
+                <button class="text-[11px] text-violet hover:text-violet/80 mono">Draft</button>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-rose-500 flex items-center justify-center text-[10px] font-semibold text-white shrink-0">MC</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-[12.5px] font-medium">Marcus Chen <span class="ml-1 text-[10px] mono bg-amber-500/15 text-amber-400 px-1 py-0.5 rounded">ex-employee</span></div>
+                  <div class="text-[11.5px] text-text-tertiary text-tertiary">Left 4mo ago — strong intel signal</div>
+                </div>
+                <button class="text-[11px] text-violet hover:text-violet/80 mono">Draft</button>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] font-semibold text-white shrink-0">PR</div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-[12.5px] font-medium">Priya Raj</div>
+                  <div class="text-[11.5px] text-text-tertiary text-tertiary">Senior Eng, Infra · since Jan '23</div>
+                </div>
+                <button class="text-[11px] text-violet hover:text-violet/80 mono">Draft</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-surface-2 surface-2 rounded-lg p-4 border border-border-subtle border-subtle">
+            <div class="flex items-center gap-2 mb-3">
+              <svg class="w-4 h-4 text-violet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span class="font-semibold text-[13.5px]">Compensation intel</span>
+              <span class="ml-auto mono text-[10px] text-text-tertiary text-tertiary">via Levels.fyi</span>
+            </div>
+            <div class="space-y-2 text-[12.5px]">
+              <div class="flex justify-between"><span class="text-text-tertiary text-tertiary">Posted band</span><span class="mono">$280k–$405k</span></div>
+              <div class="flex justify-between"><span class="text-text-tertiary text-tertiary">Real median (L6)</span><span class="mono text-emerald-400">$372k</span></div>
+              <div class="flex justify-between"><span class="text-text-tertiary text-tertiary">Equity refresh</span><span class="mono">$120k / 4y</span></div>
+              <div class="flex justify-between"><span class="text-text-tertiary text-tertiary">Sign-on (typical)</span><span class="mono">$25–60k</span></div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-border-subtle border-subtle text-[11.5px] text-text-secondary text-secondary leading-relaxed">
+              Negotiation room: <span class="text-emerald-400 font-medium">strong</span>. Posted ceiling ($405k) is below Levels p75 ($438k) — leverage available with competing offers.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───── Pipeline kanban ───── -->
+      <section>
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-[18px] font-semibold tracking-tight">Pipeline</h2>
+            <p class="text-[13px] text-text-secondary text-secondary">Drag to update. Outcomes feed the calibration loop.</p>
+          </div>
+          <button class="text-[12.5px] text-text-secondary text-secondary hover:text-text-primary flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:bg-surface-2">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Filter
+          </button>
+        </div>
+
+        <div class="grid grid-cols-5 gap-3">
+          <!-- col 1 -->
+          <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-3">
+            <div class="flex items-center justify-between px-1 mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-violet"></span>
+                <span class="text-[12px] font-semibold uppercase tracking-wider">Shortlist</span>
+              </div>
+              <span class="mono text-[11px] text-text-tertiary text-tertiary">11</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">Anthropic · Sr ML Eng</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">4.7</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">Remote</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">Stripe · Staff ML</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">4.5</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">SF/Remote</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">Linear · Head of AI</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-lime-500/15 text-lime-400 px-1.5 py-0.5 rounded">4.2</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">EU/US</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- col 2 -->
+          <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-3">
+            <div class="flex items-center justify-between px-1 mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="text-[12px] font-semibold uppercase tracking-wider">Tailoring</span>
+              </div>
+              <span class="mono text-[11px] text-text-tertiary text-tertiary">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">OpenAI · Applied AI Lead</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">4.6</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">CV ready</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">Vercel · DX Eng</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-lime-500/15 text-lime-400 px-1.5 py-0.5 rounded">4.1</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">drafting</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- col 3 -->
+          <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-3">
+            <div class="flex items-center justify-between px-1 mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span class="text-[12px] font-semibold uppercase tracking-wider">Applied</span>
+              </div>
+              <span class="mono text-[11px] text-text-tertiary text-tertiary">2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">ElevenLabs · ML Infra</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">4.4</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">5d ago</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">n8n · Founding AI Eng</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">4.3</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">2d ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- col 4 -->
+          <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-3">
+            <div class="flex items-center justify-between px-1 mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-[12px] font-semibold uppercase tracking-wider">Interviewing</span>
+              </div>
+              <span class="mono text-[11px] text-text-tertiary text-tertiary">3</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-emerald-500/30 cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">Cursor · Sr ML</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">4.6</span>
+                  <span class="text-[10.5px] text-emerald-400">onsite Thu</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">Perplexity · Eng Lead</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">4.5</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">round 2</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent hover:border-border-subtle cursor-grab">
+                <div class="text-[12.5px] font-medium truncate">Ramp · Staff Eng</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-lime-500/15 text-lime-400 px-1.5 py-0.5 rounded">4.0</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">phone</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- col 5 -->
+          <div class="bg-surface surface border border-border-subtle border-subtle rounded-xl p-3">
+            <div class="flex items-center justify-between px-1 mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-text-tertiary"></span>
+                <span class="text-[12px] font-semibold uppercase tracking-wider text-text-tertiary text-tertiary">Closed</span>
+              </div>
+              <span class="mono text-[11px] text-text-tertiary text-tertiary">8</span>
+            </div>
+            <div class="space-y-2">
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent opacity-70">
+                <div class="text-[12.5px] font-medium truncate text-text-secondary text-secondary">Notion · ML Lead</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-rose-500/15 text-rose-400 px-1.5 py-0.5 rounded">rejected</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">level mismatch</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-transparent opacity-70">
+                <div class="text-[12.5px] font-medium truncate text-text-secondary text-secondary">Figma · Eng Mgr</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-text-tertiary/15 text-text-tertiary px-1.5 py-0.5 rounded">withdrew</span>
+                  <span class="text-[10.5px] text-text-tertiary text-tertiary">comp gap</span>
+                </div>
+              </div>
+              <div class="bg-surface-2 surface-2 rounded-lg p-2.5 border border-emerald-500/30">
+                <div class="text-[12.5px] font-medium truncate">Anthropic · Head of AI</div>
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="mono text-[10px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded">offer ✦</span>
+                  <span class="text-[10.5px] text-emerald-400">accepted</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ───── Footer note ───── -->
+      <div class="text-center text-[12px] text-text-tertiary text-tertiary py-4">
+        Trajector v0.1 — design mockup · <span class="mono">~/Documents/GitHub/Trajector</span>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  // theme toggle
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+  });
+
+  // gauge — 12 spokes, length proportional to score
+  const dimScores = [4.8, 4.6, 4.7, 4.9, 5.0, 4.5, 4.8, 4.2, 5.0, 4.8, 4.7, 4.3];
+  const gauge = document.getElementById('gauge');
+  const colorFor = (s) => s >= 4.5 ? '#10b981' : s >= 4.0 ? '#84cc16' : s >= 3.5 ? '#f59e0b' : s >= 3.0 ? '#f97316' : '#f43f5e';
+  dimScores.forEach((score, i) => {
+    const angle = (i * 30) - 90; // 360/12=30, start at top
+    const len = 20 + (score / 5) * 50; // 20–70px
+    const spoke = document.createElement('div');
+    spoke.className = 'gauge-spoke';
+    spoke.style.transform = `translate(-50%, -100%) rotate(${angle + 90}deg)`;
+    spoke.style.height = len + 'px';
+    spoke.style.background = colorFor(score);
+    spoke.style.opacity = '0.9';
+    gauge.appendChild(spoke);
+  });
+
+  // command palette stub
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      alert('Command palette — to be implemented in Phase 1');
+    }
+  });
+</script>
+</body>
+</html>

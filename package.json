@@ -1,0 +1,38 @@
+{
+  "name": "trajector",
+  "version": "0.1.0-design",
+  "description": "AI-powered job intelligence with outcome calibration. Find the few roles worth your time.",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "doctor": "echo 'Phase 1 deliverable — not implemented yet'",
+    "scan": "echo 'Phase 1 deliverable — not implemented yet'",
+    "dashboard": "echo 'Phase 1 deliverable — not implemented yet'",
+    "tui": "echo 'Phase 1 deliverable — not implemented yet'",
+    "calibrate": "echo 'Phase 2 deliverable — not implemented yet'",
+    "preview-mockup": "open ui-mockup/index.html || xdg-open ui-mockup/index.html"
+  },
+  "keywords": [
+    "ai-agent",
+    "anthropic",
+    "claude-code",
+    "career",
+    "job-search",
+    "calibration",
+    "open-source",
+    "local-first"
+  ],
+  "author": "Syed Ejaz Ahammed <syedejaz8470@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syed-ejaz-ahammed/trajector.git"
+  },
+  "homepage": "https://github.com/syed-ejaz-ahammed/trajector",
+  "bugs": {
+    "url": "https://github.com/syed-ejaz-ahammed/trajector/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
